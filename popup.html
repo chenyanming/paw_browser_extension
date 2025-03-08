@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="popup.css">
+    </head>
+    <body style="min-width: 70px;">
+        <div class="wrapper">
+            <lable>
+                Enable
+            </lable>
+            <label class="switch">
+                <input type="checkbox" id="toggleButton">
+                <span class="slider round"></span>
+            </label>
+            <span id="statusText"></span>
+        </div>
+        <div class="wrapper">
+            <lable>
+                Single-Click
+            </lable>
+            <label class="switch">
+                <input type="checkbox" id="singleClickButton">
+                <span class="slider round"></span>
+            </label>
+            <span id="singleClickStatusText"></span>
+        </div>
+        <div class="wrapper">
+            <lable>
+                Auto-Highlight
+            </lable>
+            <label class="switch">
+                <input type="checkbox" id="autoHighlightButton">
+                <span class="slider round"></span>
+            </label>
+            <span id="autoHighlightStatusText"></span>
+        </div>
+        <script src="popup.js"></script>
+    </body>
+</html>

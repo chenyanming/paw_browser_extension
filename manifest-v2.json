@@ -1,0 +1,42 @@
+{
+    "manifest_version": 2,
+    "name": "paw",
+    "version": "1.0.18",
+    "browser_action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "96": "images/icon96.png"
+        }
+    },
+    "options_ui": {
+        "page": "options.html",
+        "open_in_tab": true
+    },
+    "permissions": ["storage", "http://localhost/*"],
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": true
+    },
+    "content_scripts": [
+        {
+        "all_frames": true,
+        "matches": ["<all_urls>"],
+        "js": ["jquery-3.3.1.js", "content.js"],
+        "css": ["content_scripts.css"]
+    }
+    ],
+    "icons": {
+        "16": "images/icon16.png",
+        "48": "images/icon48.png",
+        "128": "images/icon128.png"
+    },
+    "applications": {
+        "gecko": {
+            "id": "28cc339f-44a1-4e27-afab-5e1ce760bceb@paw",
+            "strict_min_version": "58.0",
+            "android": {
+                "id": "28cc339f-44a1-4e27-afab-5e1ce760bceb@paw"
+            }
+        }
+    }
+}

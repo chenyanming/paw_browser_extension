@@ -1,0 +1,57 @@
+:root {
+  --switch-width: 40px;
+  --switch-height: 20px;
+}
+.wrapper {
+    display: flex;         /* Sets the layout to Flexbox */
+    align-items: center;   /* Vertically aligns all items in the center */
+}
+.switch {
+  margin-right: 10px;    /* Adds some space between the switch and the text */
+
+  position: relative;
+  display: inline-block;
+  width: var(--switch-width);
+  height: var(--switch-height);
+}
+#statusText {
+    display: inline-block;
+    vertical-align: middle;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+  height: var(--switch-height);
+}
+.slider:before {
+  position: absolute;
+  height: calc(var(--switch-height) - 4px); /* 4px less to create a gap */
+  width: calc(var(--switch-height) - 4px); /* keep it a circle */
+  left: 2px; /* half of the gap */
+  bottom: 2px; /* half of the gap */
+  background-color: white;
+  content: "";
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+input:checked + .slider {
+  background-color: #2196F3;
+}
+input:checked + .slider:before {
+  -webkit-transform: translateX(calc(var(--switch-width) - var(--switch-height)));
+  -ms-transform: translateX(calc(var(--switch-width) - var(--switch-height)));
+  transform: translateX(calc(var(--switch-width) - var(--switch-height)));
+}
+.slider.round {
+  border-radius: var(--switch-height);
+}
+.slider.round:before {
+  border-radius: 50%;
+}

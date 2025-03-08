@@ -1,0 +1,164 @@
+.xqdd_highlight_disable {
+}
+
+.xqdd_highlight_new_word {
+    background-color: #ffe895;
+}
+
+.xqdd_bubble {
+    background-color: #FFE4C4;
+    flex-direction: column;
+    max-width: 300px;
+    align-items: flex-start;
+    position: fixed;
+    display: none;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000000;
+    font-family: 'Arial', sans-serif;
+}
+.xqdd_bubble.show {
+    display: block;
+}
+.xqdd_bubble_word {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    word-break: break-word;
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+.xqdd_bubble_word span {
+    font-weight: bold;
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+.xqdd_bubble_exp {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    color: #333;
+    font-style: italic;
+    font-size: 14px;
+}
+.xqdd_bubble_origin_path {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    color: #777;
+    font-size: 14px;
+}
+.xqdd_bubble_note {
+    display: flex;
+    align-items: flex-start;
+    color: #555;
+    font-size: 14px;
+}
+/* Adding hover effect */
+.word:hover .xqdd_bubble {
+    display: flex;
+}
+
+.xqdd_bubble_delete {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.6);
+    right: 2px;
+    top: 0;
+    cursor: pointer;
+}
+
+.xqdd_bubble_delete:hover {
+    background-color: #e81123;
+    color: white;
+}
+/* Add check button styles */
+.xqdd_bubble_check {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.6);
+    right: 30px; /* Position the check button 30px from the right */
+    top: 0;
+    cursor: pointer;
+}
+
+.xqdd_bubble_check:hover {
+    color: #4CAF50; /* Change color on hover */
+}
+.click-underline {
+    text-decoration: underline !important;
+}
+#floatingButton {
+    position: fixed;
+    bottom: 15px;
+    right: 10px;
+    width: 20px; /* Scaled width */
+    height: 20px; /* Scaled height */
+    background-color: #008CBA;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 10px; /* Scaled font size */
+    z-index: 1000;
+    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.1); /* Scaled box-shadow */
+    user-select: none; /* Prevent text selection while dragging */
+    transform: scale(1.5); /* Scaling */
+}
+#floatingButton:hover {
+    background-color: #005f73;
+}
+#submenu {
+    position: fixed;
+    background-color: white;
+    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.1); /* Scaled box-shadow */
+    border-radius: 5px;
+    padding: 5px; /* Scaled padding */
+    z-index: 1000;
+    display: none; /* Initially hidden */
+    transform: scale(1.5); /* Scaling */
+}
+.submenu-item {
+    display: block;
+    padding: 3px; /* Scaled padding */
+    margin: 2px 0; /* Scaled margins */
+    background-color: #008CBA;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: left;
+    width: auto;
+    font-size: 10px; /* Scaled font size */
+}
+.submenu-item:hover {
+    background-color: #005f73;
+}
+
+#contextMenu {
+    position: fixed;
+    background-color: white;
+    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.1); /* Scaled box-shadow */
+    border-radius: 5px;
+    padding: 5px; /* Scaled padding */
+    z-index: 1000;
+    display: none; /* Initially hidden */
+    transform: scale(1.5); /* Scaling */
+}
+.protocol-item {
+    display: inline-block;
+    padding: 3px; /* Scaled padding */
+    margin: 2px 0; /* Scaled margins */
+    background-color: #008CBA;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: left;
+    width: auto;
+    font-size: 10px; /* Scaled font size */
+}
+.protocol-item:hover {
+    background-color: #005f73;
+}

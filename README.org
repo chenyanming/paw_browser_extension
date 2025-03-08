@@ -1,0 +1,65 @@
+#+title: paw org protocol
+paw org protocol is an Emacs org protocol companion tools with configurable protocol(s).
+
+The selected information and the context are sent to Emacs via org-protocol.
+
+* Download
+1. Firefox & Firefox Android https://addons.mozilla.org/en-US/firefox/addon/emacs-paw
+2. Chrome: https://chromewebstore.google.com/detail/paw/ofhodjclfalelhgjbfmdddekoghamlge
+3. Brave: Same as Chrome, but need to add ~@@||localhost^~ into ~Create custom filters section~ of ~brave://settings/shields/filters~ if you need paw-server features.
+
+* Configuration
+
+*** Parameters
+~Template~: the template we used for org-capture
+~url~: The current page's url
+~title~: The current page's title
+~note~: The parent sentence of the selected word/area
+~body~: The selected word/area
+~Server~: The paw-server address
+~Protocol(s)~: Please check below section
+
+*** Protocols
+**** Example: Register an org-protocol of open the current page's url of chrome in eaf
+#+begin_src emacs-lisp
+
+(add-to-list 'org-protocol-protocol-alist 
+             '("Eaf Browser"
+               :protocol "eaf-browser"
+               :function org-protocol-eaf-browse
+               :kill-client t))
+
+(defun org-protocol-eaf-browse (arg)
+  (let ((url (plist-get arg :url))) ;; we also have title, note, and body, here we only use url as example
+    (eaf-browse url))
+  nil)
+#+end_src
+
+Setup the Protocol(s) in chrome extension, we support two types format of Protocol(s):
+***** Json Array (New, supported from paw extension 1.0.18)
+#+begin_src js
+[
+  { "protocol": "paw", "format": "text" },
+  { "protocol": "eaf-browser", "format": "text" },
+  { "protocol": "capture-html", "format": "html" },
+  { "protocol": "inoreader(web)", "format": "text", "download": true }
+]
+#+end_src
+You can choose ~text~ or ~html~ ~format~. It will pass the selected area as ~body~ in org-protocol link to Emacs.
+
+If ~download~ is true, the current page's html will send to paw-server, saved into ~save-dir~ (that passed to paw-server), in Emacs, it would be ~paw-server-html-file~.
+
+***** Or comma-sperated text (Old format)
+#+begin_src text
+paw,eaf-browser
+#+end_src
+
+The body will be ~text~ by default.
+
+*** paw-server (Optional)
+1. Update the server config inside the config page of the extension, and make sure the port number (~paw-server-port~) matches, for example, http://localhost:5001
+2. M-x ~paw-server~. Run the paw-server, so that all words can be highlighted on browser.
+3. paw-server is optional, you don't need to run it, and still able to use the org-protocol feature. If you installed paw command line, you can also run paw-server by
+        #+begin_src sh
+        paw run_server --database /home/damonchan/org/paw.sqlite --save-dir /tmp/ --port 5001 --wallabag-host https://example.com --wallabag-username username --wallabag-password password --wallabag-clientid clientid --wallabag-secret secret
+        #+end_src

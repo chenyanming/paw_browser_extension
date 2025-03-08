@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Paw Configuration</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" type="text/css" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Paw Configuration</h1>
+    <label>
+      <input type="checkbox" id="toggleButton">
+      <span>Enable: <span id="statusText">OFF</span></span>
+    </label>
+    <label>
+      <input type="checkbox" id="singleClickButton">
+      <span>Single-Click on all pages: <span id="singleClickstatusText">OFF</span></span>
+    </label>
+    <label>
+      <input type="checkbox" id="autoHighlightButton">
+      <span>Auto-Highlight on all pages: <span id="autoHighlightStatusText">OFF</span></span>
+    </label>
+    <label>
+      <span>Shortcut Key:</span>
+      <input type="text" id="key-selection" maxlength="1">
+    </label>
+    <label>
+      <span>Modifier Key:</span>
+      <select id="modifier-selection">
+        <option value="None">None</option>
+        <option value="Ctrl">Ctrl</option>
+        <option value="Alt">Alt</option>
+      </select>
+    </label>
+    <label>
+      <span>Floating Button Left Offset:</span>
+      <input type="number" id="floating-button-left" min="-1000" max="1000">
+    </label>
+    <label>
+      <span>Floating Button Top Offset:</span>
+      <input type="number" id="floating-button-top" min="-1000" max="1000">
+    </label>
+    <label>
+      <span>Protocol(s):</span>
+      <input type="text" id="protocol" value="paw">
+    </label>
+    <label>
+      <span>Template:</span>
+      <input type="text" id="template" value="w" maxlength="1">
+    </label>
+    <label>
+      <span>Url:</span>
+      <input type="text" id="url" value="url">
+    </label>
+    <label>
+      <span>Title:</span>
+      <input type="text" id="title" value="title">
+    </label>
+    <label>
+      <span>Note:</span>
+      <input type="text" id="note" value="note">
+    </label>
+    <label>
+      <span>Body:</span>
+      <input type="text" id="body" value="body">
+    </label>
+    <label>
+      <span>Server:</span>
+      <input type="text" id="server" value="http://localhost:5001">
+    </label>
+    <button id="save-key">Save</button>
+  </div>
+  <footer>
+    <p>Damon Chan &copy; 2025</p>
+  </footer>
+  <script src="options.js"></script>
+</body>
+</html>

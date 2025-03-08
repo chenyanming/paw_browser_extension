@@ -1,7 +1,8 @@
 #+title: paw org protocol
 paw org protocol is an Emacs org protocol companion tool with configurable protocol(s).
 
-The selected information and the context are sent to Emacs via org-protocol.
+The url, title, selected area (body), and the context (note) surrounded the area
+are sent to Emacs via org-protocol.
 
 * Download
 1. Firefox & Firefox Android https://addons.mozilla.org/en-US/firefox/addon/emacs-paw
@@ -11,7 +12,7 @@ The selected information and the context are sent to Emacs via org-protocol.
 * Configuration
 
 *** Parameters
-- ~Template~: the template we used for org-capture
+- ~Template~: the template we used for org-capture, it could be empty if you are not using org-capture
 - ~url~: The current page's url
 - ~title~: The current page's title
 - ~note~: The parent sentence of the selected word/area

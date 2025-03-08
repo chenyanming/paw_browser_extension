@@ -20,7 +20,7 @@ The selected information and the context are sent to Emacs via org-protocol.
 - ~Protocol(s)~: Please check below section
 
 *** Protocols
-**** Example: Register an org-protocol of open the current page's url of chrome in eaf
+**** Example: Register an org-protocol of opening the current page's url of chrome in eaf
 #+begin_src emacs-lisp
 
 (add-to-list 'org-protocol-protocol-alist 

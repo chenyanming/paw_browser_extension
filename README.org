@@ -32,7 +32,7 @@ are sent to Emacs via org-protocol.
 
 (defun org-protocol-eaf-browse (arg)
   (let ((url (plist-get arg :url))) ;; we also have title, note, and body, here we only use url as example
-    (eaf-browse url))
+    (eaf-open-browser url))
   nil)
 #+end_src
 

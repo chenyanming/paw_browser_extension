@@ -1,5 +1,5 @@
 #+title: paw org protocol
-paw org protocol is an Emacs org protocol companion tools with configurable protocol(s).
+paw org protocol is an Emacs org protocol companion tool with configurable protocol(s).
 
 The selected information and the context are sent to Emacs via org-protocol.
 
@@ -11,13 +11,13 @@ The selected information and the context are sent to Emacs via org-protocol.
 * Configuration
 
 *** Parameters
-~Template~: the template we used for org-capture
-~url~: The current page's url
-~title~: The current page's title
-~note~: The parent sentence of the selected word/area
-~body~: The selected word/area
-~Server~: The paw-server address
-~Protocol(s)~: Please check below section
+- ~Template~: the template we used for org-capture
+- ~url~: The current page's url
+- ~title~: The current page's title
+- ~note~: The parent sentence of the selected word/area
+- ~body~: The selected word/area
+- ~Server~: The paw-server address
+- ~Protocol(s)~: Please check below section
 
 *** Protocols
 **** Example: Register an org-protocol of open the current page's url of chrome in eaf

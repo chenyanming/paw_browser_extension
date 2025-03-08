@@ -60,9 +60,22 @@ The body will be ~text~ by default.
 1. Install python command line tool [[https://pypi.org/project/emacs-paw/][emacs-paw]]
 2. Run paw-server by
         #+begin_src sh
-        paw run_server --database /home/damonchan/org/paw.sqlite --save-dir /tmp/source.html --port 5001 --wallabag-host https://example.com --wallabag-username username --wallabag-password password --wallabag-clientid clientid --wallabag-secret secret
+        paw run_server --port 5001 --save-dir /tmp/paw_server_html_file.html
         #+end_src
-If you installed [[https://github.com/chenyanming/paw][paw.el]], you can also use M-x ~paw-server~
+        If you installed [[https://github.com/chenyanming/paw][paw.el]], you can also use M-x ~paw-server~
+3. You can handle the html in any org protocol function
+        #+begin_src emacs-lisp
+        (defun paw-server-org-protocol (data)
+                (let* ((url (org-protocol-sanitize-uri (or (plist-get data :url) ""))))
+                (message "URL: %s" url)
+                (when (file-exists-p "/tmp/paw_server_html_file.html")
+                ;; handle the html file here
+                ;; delete the file if you want to
+                (delete-file "/tmp/paw_server_html_file.html"))
+        nil))
+        #+end_src
+        Check more paw-server features on [[https://github.com/chenyanming/paw][paw]].
+
 
 *** Supported Emacs Packages
 - https://github.com/chenyanming/paw: Send word to Emacs and show on paw-view-note

@@ -66,13 +66,13 @@ The body will be ~text~ by default.
 3. You can handle the html in any org protocol function
         #+begin_src emacs-lisp
         (defun paw-server-org-protocol (data)
-                (let* ((url (org-protocol-sanitize-uri (or (plist-get data :url) ""))))
-                (message "URL: %s" url)
-                (when (file-exists-p "/tmp/paw_server_html_file.html")
-                ;; handle the html file here
-                ;; delete the file if you want to
-                (delete-file "/tmp/paw_server_html_file.html"))
-        nil))
+          (let* ((url (org-protocol-sanitize-uri (or (plist-get data :url) ""))))
+            (message "URL: %s" url)
+            (when (file-exists-p "/tmp/paw_server_html_file.html")
+              ;; handle the html file here
+              ;; delete the file if you want to
+              (delete-file "/tmp/paw_server_html_file.html"))
+            nil))
         #+end_src
         Check more paw-server features on [[https://github.com/chenyanming/paw][paw]].
 

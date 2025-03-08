@@ -57,6 +57,8 @@ paw,eaf-browser
 The body will be ~text~ by default.
 
 *** paw-server
+[[https://pypi.org/project/emacs-paw/][emacs-paw]] is a python command line tool, it provides a backend flash server to communicate with the extension. It is original part of [[https://github.com/chenyanming/paw][paw.el]], but now it is a complete individual tool that can run without [[https://github.com/chenyanming/paw][paw.el]].
+
 1. Install python command line tool [[https://pypi.org/project/emacs-paw/][emacs-paw]]
 2. Run paw-server by
         #+begin_src sh

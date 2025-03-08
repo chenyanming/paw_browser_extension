@@ -42,12 +42,12 @@ Setup the Protocol(s) in chrome extension, we support two types format of Protoc
   { "protocol": "paw", "format": "text" },
   { "protocol": "eaf-browser", "format": "text" },
   { "protocol": "capture-html", "format": "html" },
-  { "protocol": "inoreader(web)", "format": "text", "download": true }
+  { "protocol": "wallabag", "format": "text", "download": true }
 ]
 #+end_src
 You can choose ~text~ or ~html~ ~format~. It will pass the selected area as ~body~ in org-protocol link to Emacs.
 
-If ~download~ is true, the current page's html will send to paw-server, saved into ~save-dir~ (that passed to paw-server), in Emacs, it would be ~paw-server-html-file~.
+If you install python command line tool [[https://pypi.org/project/emacs-paw/][emacs-paw]], and if ~download~ is true, the current page's html will send to paw-server, saved into ~save-dir~, trigger org-protocol link, finally you can handle the html file in Emacs.
 
 ***** Or comma-sperated text (Old format)
 #+begin_src text
@@ -56,13 +56,18 @@ paw,eaf-browser
 
 The body will be ~text~ by default.
 
-*** paw-server (Optional)
-1. Update the server config inside the config page of the extension, and make sure the port number (~paw-server-port~) matches, for example, http://localhost:5001
-2. M-x ~paw-server~. Run the paw-server, so that all words can be highlighted on browser.
-3. paw-server is optional, you don't need to run it, and still able to use the org-protocol feature. If you installed paw command line, you can also run paw-server by
+*** paw-server
+1. Install python command line tool [[https://pypi.org/project/emacs-paw/][emacs-paw]]
+2. Run paw-server by
         #+begin_src sh
         paw run_server --database /home/damonchan/org/paw.sqlite --save-dir /tmp/ --port 5001 --wallabag-host https://example.com --wallabag-username username --wallabag-password password --wallabag-clientid clientid --wallabag-secret secret
         #+end_src
+If you installed [[https://github.com/chenyanming/paw][paw.el]], you can also use M-x ~paw-server~
+
+*** Supported Emacs Packages
+- https://github.com/chenyanming/paw: Send word to Emacs and show on paw-view-note
+- https://github.com/chenyanming/wallabag.el: Open the wallabag article or save the page to wallabag
+- https://github.com/chenyanming/calibredb.el: Open ebook directly in browser
 
 ** Similar Projects
 - https://github.com/alphapapa/org-protocol-capture-html

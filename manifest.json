@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "paw",
-    "version": "1.0.18",
+    "version": "1.0.19",
     "action": {
         "default_popup": "popup.html",
         "default_icon": {
@@ -15,7 +15,7 @@
     "background": {
         "service_worker": "background.js"
     },
-    "permissions": ["storage"],
+    "permissions": ["storage", "activeTab"],
     "host_permissions": ["http://localhost/*"],
     "content_scripts": [
         {

@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
     autoHighlightButton.checked = !data.isAutoHighlightDisabled;
     autoHighlightStatusText.textContent = data.isAutoHighlightDisabled ? 'OFF' : 'ON';
     keySelection.value = data.shortcutKey || 's';
-    modifierSelection.value = data.modifierKey || 'None';
+    modifierSelection.value = data.modifierKey || 'Alt';
     floatingButtonLeftSelection.value = data.floatingButtonLeft || '10';
     floatingButtonTopSelection.value = data.floatingButtonTop || '-10';
     // Load new settings

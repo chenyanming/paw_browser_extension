@@ -41,19 +41,19 @@ api.runtime.onInstalled.addListener(() => {
     });
 });
 
-api.storage.sync.get('shortcutKey', function(data) {
-    const shortcutKey = data.shortcutKey || 's'; // Default key is 's'
-    document.addEventListener('keydown', async function(e) {
-        if (e.key === shortcutKey) {
-            console.log(`'${shortcutKey}' key was pressed`);
-            let isExtensionDisabled = await new Promise((resolve) => {
-                api.storage.sync.get('isExtensionDisabled', function(data) {
-                    resolve(data.isExtensionDisabled);
-                });
-            });
-            if (!isExtensionDisabled) {
-                send_to_paw();
-            }
-        }
-    });
-});
+// api.storage.sync.get('shortcutKey', function(data) {
+//     const shortcutKey = data.shortcutKey || 's'; // Default key is 's'
+//     document.addEventListener('keydown', async function(e) {
+//         if (e.key === shortcutKey) {
+//             console.log(`'${shortcutKey}' key was pressed`);
+//             let isExtensionDisabled = await new Promise((resolve) => {
+//                 api.storage.sync.get('isExtensionDisabled', function(data) {
+//                     resolve(data.isExtensionDisabled);
+//                 });
+//             });
+//             if (!isExtensionDisabled) {
+//                 send_to_paw();
+//             }
+//         }
+//     });
+// });

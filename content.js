@@ -126,13 +126,16 @@ api.storage.onChanged.addListener(function(changes, namespace) {
             // console.log('Single Click Mode was:', oldValue ? 'Disabled' : 'Enabled');
             console.log('Extension is now:', newValue ? 'Disabled' : 'Enabled');
             if (!newValue) {
-                floatingButton.style.display = "block";
+                createButton();
+                // floatingButton.style.display = "block";
             } else {
+                deleteButton();
                 disable_highlight();
                 disable_clickable_word();
-                floatingButton.style.display = "none";
-                contextMenu.style.display = "none";
-                submenu.style.display = "none";
+
+                // floatingButton.style.display = "none";
+                // contextMenu.style.display = "none";
+                // submenu.style.display = "none";
             }
         }
 
@@ -162,6 +165,15 @@ api.storage.onChanged.addListener(function(changes, namespace) {
 api.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.type === 'statusChange') {
         // alert(request.message);
+    }
+});
+
+api.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "send_to_paw") {
+        // 调用 content.js 中的函数
+        send_to_paw(request.selectedNode, request.item, request.allowNoSelection);
+        underlineSelectionAndDeselect();
+        sendResponse({ result: "Function in content.js called" });
     }
 });
 
@@ -677,6 +689,7 @@ function getButtonPositionPercentage(button) {
 }
 
 
+let intervalId;
 function createButton() {
     // Create the floating button
     const button = document.createElement("button");
@@ -831,7 +844,7 @@ function createButton() {
         isDragging = false;
     });
 
-    setInterval(async () => {
+    intervalId = setInterval(async () => {
         // console.log("Document Mouseup");
         await placeButtonAtSelection(button, submenu, contextMenu);
         isDragging = false;
@@ -935,6 +948,34 @@ function createButton() {
 
     });
 
+}
+
+function deleteButton() {
+    // Clear the interval to stop repeated execution
+    clearInterval(intervalId);
+
+    const floatingButton = document.getElementById("floatingButton");
+
+    if (floatingButton) {
+        // Create a copy without event listeners
+        const newButton = floatingButton.cloneNode(true);
+        floatingButton.replaceWith(newButton); // Replace original with the cloned button
+
+        // Now remove the newly cloned button
+        newButton.remove();
+    }
+
+    // 删除子菜单
+    const submenu = document.getElementById("submenu");
+    if (submenu) {
+        submenu.remove();
+    }
+
+    // 删除上下文菜单
+    const contextMenu = document.getElementById("contextMenu");
+    if (contextMenu) {
+        contextMenu.remove();
+    }
 }
 
 async function placeButtonAtSelection(button, submenu, contextMenu) {

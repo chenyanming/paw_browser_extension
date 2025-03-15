@@ -50,8 +50,12 @@ You can choose ~text~ or ~html~ ~format~. It will pass the selected area as ~bod
 
 If you install python command line tool [[https://pypi.org/project/emacs-paw/][emacs-paw]], and if ~download~ is true, the current page's html will send to paw-server, saved into ~save-dir~, trigger org-protocol link, finally you can handle the html file in Emacs.
 
-****** TODO v1.0.20
-If ~deselect~ is true, it will deselect the text after running the org-protocol.
+Supported configurations:
+
+| protocol | string               | the protocol in Emacs                                              |
+| format   | string: text or html | If html, will send html to emacs                                   |
+| download | true/false           | If true, the current page's html will send to paw-server           |
+| deselect | true/false           | If true, it will deselect the text after running the org-protocol. |
 
 ***** Or comma-sperated text (Old format)
 #+begin_src text

@@ -172,7 +172,6 @@ api.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "send_to_paw") {
         // 调用 content.js 中的函数
         send_to_paw(request.selectedNode, request.item, request.allowNoSelection);
-        deselect();
         sendResponse({ result: "Function in content.js called" });
     }
 });
@@ -371,6 +370,13 @@ function paw_get_org_protocol_link(item, parent, body_selection_html, body_selec
             });
             location.href = link;
         }
+
+
+        // 格式默认使用 text
+        if (params.deselect === True) {
+            deselect();
+        }
+
     });
 
 }
@@ -747,8 +753,6 @@ function createButton() {
 
                         // console.log("Button Click");
                         send_to_paw(undefined, parseInt(i)+1);
-                        deselect();
-
                     });
 
                 }
@@ -767,7 +771,6 @@ function createButton() {
 
                         // console.log("Button Click");
                         send_to_paw(undefined, parseInt(i), true);
-                        deselect();
                     });
 
                 }
@@ -944,7 +947,6 @@ function createButton() {
 
         // console.log("Button Click");
         send_to_paw();
-        deselect();
 
     });
 

@@ -172,7 +172,7 @@ api.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "send_to_paw") {
         // 调用 content.js 中的函数
         send_to_paw(request.selectedNode, request.item, request.allowNoSelection);
-        underlineSelectionAndDeselect();
+        deselect();
         sendResponse({ result: "Function in content.js called" });
     }
 });
@@ -747,7 +747,7 @@ function createButton() {
 
                         // console.log("Button Click");
                         send_to_paw(undefined, parseInt(i)+1);
-                        underlineSelectionAndDeselect();
+                        deselect();
 
                     });
 
@@ -767,7 +767,7 @@ function createButton() {
 
                         // console.log("Button Click");
                         send_to_paw(undefined, parseInt(i), true);
-                        underlineSelectionAndDeselect();
+                        deselect();
                     });
 
                 }
@@ -944,7 +944,7 @@ function createButton() {
 
         // console.log("Button Click");
         send_to_paw();
-        underlineSelectionAndDeselect();
+        deselect();
 
     });
 
@@ -1083,6 +1083,16 @@ function underlineSelectionAndDeselect() {
     // Clear the text selection
     selection.removeAllRanges();
 }
+
+function deselect() {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+        return;  // Exit if no text is selected
+    }
+    selection.removeAllRanges();
+}
+
+
 
 function getSelectionBoundaryPosition() {
     const selection = window.getSelection();

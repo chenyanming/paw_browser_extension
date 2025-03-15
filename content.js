@@ -373,7 +373,7 @@ function paw_get_org_protocol_link(item, parent, body_selection_html, body_selec
 
 
         // 格式默认使用 text
-        if (params.deselect === True) {
+        if (params.deselect === true) {
             deselect();
         }
 

@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "paw",
-    "version": "1.0.20",
+    "version": "1.0.21",
     "action": {
         "default_popup": "popup.html",
         "default_icon": {

@@ -73,6 +73,27 @@ document.addEventListener('keydown', async function (e) {
     }
 });
 
+// hide the floating button when the page is in fullscreen mode
+document.addEventListener("fullscreenchange", toggleButtonVisibility);
+document.addEventListener("webkitfullscreenchange", toggleButtonVisibility);
+document.addEventListener("mozfullscreenchange", toggleButtonVisibility);
+document.addEventListener("MSFullscreenChange", toggleButtonVisibility);
+
+function toggleButtonVisibility() {
+    if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+        closeFloatingButton();
+        const submenu = document.getElementById("submenu");
+        if (submenu.style.display === "block") {
+            submenu.style.display = "none";
+        }
+        isIntervalPaused = true;
+    } else {
+        openFloatingButton();
+        isIntervalPaused = false;
+    }
+}
+
+
 api.storage.sync.get('isExtensionDisabled', function(data) {
     if(data.isExtensionDisabled) {
         console.log("The extension is disabled");
@@ -696,6 +717,8 @@ function getButtonPositionPercentage(button) {
 
 
 let intervalId;
+let isIntervalPaused = false;
+
 function createButton() {
     // Create the floating button
     const button = document.createElement("button");
@@ -848,8 +871,12 @@ function createButton() {
     });
 
     intervalId = setInterval(async () => {
-        // console.log("Document Mouseup");
-        await placeButtonAtSelection(button, submenu, contextMenu);
+        if (isIntervalPaused) {
+            return;
+        } else {
+            // console.log("Document Mouseup");
+            await placeButtonAtSelection(button, submenu, contextMenu);
+        }
         isDragging = false;
     }, 100);
 

@@ -106,6 +106,8 @@ api.storage.sync.get('isExtensionDisabled', function(data) {
         $(function () {
             createButton();
             console.log("createButton done");
+            waitForNetflixAndExpose();
+            console.log("expose netflix done");
         });
     }
 });
@@ -1694,6 +1696,15 @@ function disable_clickable_word() {
     }
 }
 
+
+// 注入到页面主 world
+function waitForNetflixAndExpose() {
+    // 创建 <script> 注入到页面主世界
+    const s = document.createElement('script');
+    s.src = chrome.runtime.getURL('netflix-bridge.js');
+    s.onload = () => s.remove(); // 加载后删除标签
+    document.documentElement.appendChild(s);
+}
 
 
 function test (){

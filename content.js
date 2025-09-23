@@ -426,6 +426,7 @@ function paw_post_to_python(item, parent, body_selection_html, body_selection_te
         } else {
             params = protocolArray[0];
         }
+        protocol = params.protocol || 'paw';
 
         let format = params.format || 'text';
 
@@ -441,6 +442,7 @@ function paw_post_to_python(item, parent, body_selection_html, body_selection_te
 
         // Construct payload
         const payload = {
+            protocol: protocol,
             url: url,
             title: title,
             note: note,

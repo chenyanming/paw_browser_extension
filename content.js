@@ -290,10 +290,12 @@ function send_to_paw(selectedNode, item, allowNoSelection) {
         var body_selection_text = selection;
         var body_selection_html = get_body_html();
 
-        paw_get_org_protocol_link(item, parent, body_selection_html, body_selection_text);
+        // paw_get_org_protocol_link(item, parent, body_selection_html, body_selection_text);
+        paw_post_to_python(item, parent, body_selection_html, body_selection_text);
 
     } else if (allowNoSelection && selection.length == 0) {
-        paw_get_org_protocol_link(item, false, "", "");
+        // paw_get_org_protocol_link(item, false, "", "");
+        paw_post_to_python(item, false, "", "");
     }
 
 
@@ -402,6 +404,90 @@ function paw_get_org_protocol_link(item, parent, body_selection_html, body_selec
 
     });
 
+}
+
+/**
+ * Send data to Python Flask /paw endpoint.
+ * If fails, fallback to original org-protocol link.
+ */
+function paw_post_to_python(item, parent, body_selection_html, body_selection_text) {
+    api.storage.sync.get(['protocol', 'template', 'url', 'title', 'note', 'body', 'server'], function(data) {
+        const server = data.server || "http://localhost:5001";
+
+        let url = window.location.href;
+        let title = document.title || "[untitled page]";
+        let note = parent.textContent || "";
+
+        // Pick protocol parameters
+        let params = {};
+        let protocolArray = paw_parse_protocol(data.protocol);
+        if (item !== undefined && item < protocolArray.length) {
+            params = protocolArray[item];
+        } else {
+            params = protocolArray[0];
+        }
+
+        let format = params.format || 'text';
+
+        // Prepare body
+        let body;
+        if (format === 'markdown') {
+            body = convertHtmlToMarkdown(body_selection_html);
+        } else {
+            body = (format === 'html') ? body_selection_html : body_selection_text;
+        }
+
+        const template = data.template || 'w';
+
+        // Construct payload
+        const payload = {
+            url: url,
+            title: title,
+            note: note,
+            body: body,
+            format: format,
+            template: template
+        };
+
+        // If download is true, get html_file first
+        function sendPayload() {
+            fetch(`${server}/paw`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Auth-Token': 'your-secure-token'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "ok") {
+                    console.log("Sent to Emacs successfully", data.result);
+                } else {
+                    console.warn("POST failed, fallback to paw_get_org_protocol_link");
+                    paw_get_org_protocol_link(item, parent, body_selection_html, body_selection_text);
+                }
+            })
+            .catch(err => {
+                console.warn("Fetch failed, fallback to paw_get_org_protocol_link", err);
+                paw_get_org_protocol_link(item, parent, body_selection_html, body_selection_text);
+            });
+        }
+
+        if (params.download === true) {
+            send_html_to_python((downloadData) => {
+                payload.html_file = downloadData.temp_file_path;
+                sendPayload();
+            });
+        } else {
+            sendPayload();
+        }
+
+        // Handle deselect
+        if (params.deselect === true) {
+            deselect();
+        }
+    });
 }
 
 

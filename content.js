@@ -143,61 +143,67 @@ api.storage.sync.get('isAutoHighlightDisabled', function(data) {
 
 
 
-api.storage.onChanged.addListener(function(changes, namespace) {
-    for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
-        if(key === 'isExtensionDisabled') {
-            // console.log('Single Click Mode was:', oldValue ? 'Disabled' : 'Enabled');
-            console.log('Extension is now:', newValue ? 'Disabled' : 'Enabled');
-            if (!newValue) {
-                createButton();
-                // floatingButton.style.display = "block";
-            } else {
-                deleteButton();
-                disable_highlight();
-                disable_clickable_word();
+if (window.top === window) {
+    if (!window.hasPawListener) {
+        window.hasPawListener = true;
 
-                // floatingButton.style.display = "none";
-                // contextMenu.style.display = "none";
-                // submenu.style.display = "none";
+        api.storage.onChanged.addListener(function(changes, namespace) {
+            for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
+                if(key === 'isExtensionDisabled') {
+                    // console.log('Single Click Mode was:', oldValue ? 'Disabled' : 'Enabled');
+                    console.log('Extension is now:', newValue ? 'Disabled' : 'Enabled');
+                    if (!newValue) {
+                        createButton();
+                        // floatingButton.style.display = "block";
+                    } else {
+                        deleteButton();
+                        disable_highlight();
+                        disable_clickable_word();
+
+                        // floatingButton.style.display = "none";
+                        // contextMenu.style.display = "none";
+                        // submenu.style.display = "none";
+                    }
+                }
+
+                if(key === 'isSingleClickDisabled') {
+                    // console.log('Single Click Mode was:', oldValue ? 'Disabled' : 'Enabled');
+                    console.log('Single Click Mode is now:', newValue ? 'Disabled' : 'Enabled');
+                    if (!newValue) {
+                        monitor_and_close_premium_popup();
+                        enable_clickable_word();
+                    } else {
+                        disable_clickable_word();
+                    }
+                }
+
+                if(key === 'isAutoHighlightDisabled') {
+                    // console.log('Single Click Mode was:', oldValue ? 'Disabled' : 'Enabled');
+                    console.log('Auto Highlight Mode is now:', newValue ? 'Disabled' : 'Enabled');
+                    if (!newValue) {
+                        highlight_words();
+                    } else {
+                        disable_highlight();
+                    }
+                }
             }
-        }
+        });
 
-        if(key === 'isSingleClickDisabled') {
-            // console.log('Single Click Mode was:', oldValue ? 'Disabled' : 'Enabled');
-            console.log('Single Click Mode is now:', newValue ? 'Disabled' : 'Enabled');
-            if (!newValue) {
-                monitor_and_close_premium_popup();
-                enable_clickable_word();
-            } else {
-                disable_clickable_word();
+        api.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+            if (request.type === 'statusChange') {
+                // alert(request.message);
             }
-        }
+        });
 
-        if(key === 'isAutoHighlightDisabled') {
-            // console.log('Single Click Mode was:', oldValue ? 'Disabled' : 'Enabled');
-            console.log('Auto Highlight Mode is now:', newValue ? 'Disabled' : 'Enabled');
-            if (!newValue) {
-                highlight_words();
-            } else {
-                disable_highlight();
+        api.runtime.onMessage.addListener((request, sender, sendResponse) => {
+            if (request.action === "send_to_paw") {
+                // 调用 content.js 中的函数
+                send_to_paw(request.selectedNode, request.item, request.allowNoSelection);
+                sendResponse({ result: "Function in content.js called" });
             }
-        }
+        });
     }
-});
-
-api.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    if (request.type === 'statusChange') {
-        // alert(request.message);
-    }
-});
-
-api.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "send_to_paw") {
-        // 调用 content.js 中的函数
-        send_to_paw(request.selectedNode, request.item, request.allowNoSelection);
-        sendResponse({ result: "Function in content.js called" });
-    }
-});
+}
 
 function toggleFloatingButton() {
     const floatingButton = document.getElementById("floatingButton");

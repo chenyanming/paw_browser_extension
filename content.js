@@ -1,8 +1,31 @@
+/**
+ * paw - Content script
+ *
+ * Responsibilities
+ * - Keyboard shortcut (modifier + key) to capture the word at caret
+ * - Floating "+" button near selection with submenu/context menu actions
+ * - Single-click mode: wrap words and send selection to backend/Emacs
+ * - Auto highlight known words from paw-server and show info bubble
+ * - Bridge injection for site-specific controls (e.g., Netflix)
+ *
+ * External Services
+ * - Optional paw-server (default `http://localhost:5001`) for POST /paw, /words, /source
+ *
+ * Storage Keys (sync)
+ * - isExtensionDisabled, isSingleClickDisabled, isAutoHighlightDisabled
+ * - shortcutKey, modifierKey
+ * - floatingButtonLeft, floatingButtonTop
+ * - defaultFloatingButtonLeft, defaultFloatingButtonTop
+ * - protocol, template, url, title, note, body, server
+ */
 console.log("Hello from paw.js");
 
 const api = (typeof browser !== 'undefined') ? browser : chrome;
 
-// Function to load shortcut keys from storage
+/**
+ * Load shortcut and modifier from storage.
+ * @returns {Promise<{shortcutKey?: string, modifierKey?: ("Ctrl"|"Alt"|"None")}>}
+ */
 async function getShortcutKeys() {
     return new Promise((resolve) => {
         api.storage.sync.get(['shortcutKey', 'modifierKey'], function (data) {
@@ -11,7 +34,10 @@ async function getShortcutKeys() {
     });
 }
 
-// Function to load floating button settings
+/**
+ * Load floating button pixel offsets.
+ * @returns {Promise<{floatingButtonLeft?: string, floatingButtonTop?: string}>}
+ */
 async function getFloatingButtonSettings() {
     return new Promise((resolve) => {
         api.storage.sync.get(['floatingButtonLeft', 'floatingButtonTop'], function (data) {
@@ -28,6 +54,9 @@ document.addEventListener("mousemove", function (event) {
 });
 
 // Setup key event listener
+/**
+ * Keyboard handler: modifier + key to select current word under caret and send.
+ */
 document.addEventListener('keydown', async function (e) {
     const { shortcutKey, modifierKey } = await getShortcutKeys();
     const key = shortcutKey || 's'; // Default main key is 's'
@@ -58,7 +87,7 @@ document.addEventListener('keydown', async function (e) {
         let word = text.slice(start, end);
         console.log("选中的单词:", word);
 
-        // **创建 Range 并高亮选中**
+        // Create a Range and select the word
         let newRange = document.createRange();
         newRange.setStart(textNode, start);
         newRange.setEnd(textNode, end);
@@ -67,7 +96,7 @@ document.addEventListener('keydown', async function (e) {
         selection.removeAllRanges(); // 清除之前的选区
         selection.addRange(newRange); // 选中新的单词
 
-        // Run your content script code even if it is disabled...
+        // Run content script action
         send_to_paw();
         e.preventDefault(); // Prevent default action for the key combination
     }
@@ -79,6 +108,7 @@ document.addEventListener("webkitfullscreenchange", toggleButtonVisibility);
 document.addEventListener("mozfullscreenchange", toggleButtonVisibility);
 document.addEventListener("MSFullscreenChange", toggleButtonVisibility);
 
+/** Hide floating UI in fullscreen modes. */
 function toggleButtonVisibility() {
     if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
         closeFloatingButton();
@@ -226,6 +256,10 @@ function openFloatingButton () {
     floatingButton.style.display = "block";
 }
 
+/**
+ * Capture selected HTML fragment with absolute URLs for anchors/images.
+ * @returns {string}
+ */
 function get_body_html () {
     var html = "";
     if (typeof window.getSelection != "undefined") {
@@ -260,6 +294,12 @@ function get_body_html () {
     return div.innerHTML;
 }
 
+/**
+ * Send selected content to paw-server or org-protocol.
+ * @param {Node=} selectedNode Optional node to use instead of current selection
+ * @param {number=} item Index in configured protocol array
+ * @param {boolean=} allowNoSelection Allow sending with empty selection
+ */
 function send_to_paw(selectedNode, item, allowNoSelection) {
     var selection;
     if (selectedNode !== undefined) {
@@ -326,6 +366,11 @@ function send_to_paw(selectedNode, item, allowNoSelection) {
 // Example: "paw,anki" => [{protocol: "paw"}, {protocol: "anki"}]
 // If the protocol is JSON format, return the parsed JSON array
 // Example: "[{protocol: 'paw'}, {protocol: 'anki'}]"
+/**
+ * Parse Protocol(s) setting to array of { protocol, format?, download?, deselect? }.
+ * @param {string} text
+ * @returns {{protocol: string, format?: string, download?: boolean, deselect?: boolean}[]}
+ */
 function paw_parse_protocol(text) {
     let protocolArray = [];
     try {
@@ -343,6 +388,9 @@ function paw_parse_protocol(text) {
 // item: determine the protocol
 // body_selection_html: the selected html content
 // body_selection_text: the selected text content
+/**
+ * Build and navigate to org-protocol link as fallback.
+ */
 function paw_get_org_protocol_link(item, parent, body_selection_html, body_selection_text) {
     api.storage.sync.get(['protocol', 'template', 'url', 'title', 'note', 'body'], function(data) {
         var url = encodeURIComponent(window.location.href);
@@ -415,6 +463,9 @@ function paw_get_org_protocol_link(item, parent, body_selection_html, body_selec
 /**
  * Send data to Python Flask /paw endpoint.
  * If fails, fallback to original org-protocol link.
+ */
+/**
+ * POST selection payload to paw-server; fallback to org-protocol on failure.
  */
 function paw_post_to_python(item, parent, body_selection_html, body_selection_text) {
     api.storage.sync.get(['protocol', 'template', 'url', 'title', 'note', 'body', 'server'], function(data) {
@@ -500,6 +551,10 @@ function paw_post_to_python(item, parent, body_selection_html, body_selection_te
 
 
 
+/**
+ * Build a structured selection snapshot for embedding apps.
+ * @returns {{url:string,title:string,note:string,body:string}|string}
+ */
 function paw_new_entry(selectedNode) {
     console.log("paw_new_entry", selectedNode);
     var selection;
@@ -588,6 +643,10 @@ var currWordData;
 /**
  * 初始化
  */
+/**
+ * Upload full page HTML to paw-server /source.
+ * @param {(data: {temp_file_path: string})=>void} callback
+ */
 function send_html_to_python(callback) {
     api.storage.sync.get('server', function(data) {
         let server = data.server || "http://localhost:5001";
@@ -609,6 +668,7 @@ function send_html_to_python(callback) {
 }
 
 
+/** Save current page to Wallabag via paw-server proxy. */
 function save_to_wallabag() {
   api.storage.sync.get('server', function(data) {
     let server = data.server || "http://localhost:5001";
@@ -635,6 +695,7 @@ function save_to_wallabag() {
 }
 
 
+/** Fetch words from server and highlight matches in DOM, then create bubble. */
 function highlight_words() {
     api.storage.sync.get('server', function(data) {
         let server = data.server || "http://localhost:5001";
@@ -684,6 +745,7 @@ function highlight_words() {
 /*
  * Hide the word
  */
+/** Remove highlight for a specific word. */
 function paw_delete_word(word) {
     //取消高亮删除的单词
     $(`xqdd_highlight_new_word[word='${word}']`).attr("class", "xqdd_highlight_disable");
@@ -693,6 +755,7 @@ function paw_delete_word(word) {
 /**
  * Disable paw-annotation-mode
  */
+/** Disable annotation related listeners and highlights. */
 function paw_annotation_mode_disable() {
 
     // Disable sentence item click listener
@@ -700,6 +763,7 @@ function paw_annotation_mode_disable() {
     disable_highlight();
 }
 
+/** Remove all automatic highlights. */
 function disable_highlight() {
     //取消所有高亮
     console.log('disable auto highlight mode');
@@ -709,6 +773,7 @@ function disable_highlight() {
 /**
  * 创建鼠标悬浮气泡
  */
+/** Create and attach info bubble UI for highlighted words. */
 function createBubble() {
     //创建添加到body中
     var div = $("<div>").attr("class", "xqdd_bubble");
@@ -798,6 +863,7 @@ function createBubble() {
 }
 
 // FIXME Disable, unstable
+// FIXME: unstable percent-based position calculation
 function getButtonPositionPercentage(button) {
     const btnRect = button.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
@@ -815,6 +881,7 @@ function getButtonPositionPercentage(button) {
 let intervalId;
 let isIntervalPaused = false;
 
+/** Create floating "+" button, submenu, and context menu; wire events. */
 function createButton() {
     // Create the floating button
     const button = document.createElement("button");
@@ -1075,6 +1142,7 @@ function createButton() {
 
 }
 
+/** Remove floating button and related menus; stop timers. */
 function deleteButton() {
     // Clear the interval to stop repeated execution
     clearInterval(intervalId);
@@ -1103,6 +1171,7 @@ function deleteButton() {
     }
 }
 
+/** Position floating button relative to current selection, else reset. */
 async function placeButtonAtSelection(button, submenu, contextMenu) {
     // after selection, set the button position relative to selection area
     const selection = window.getSelection();
@@ -1118,6 +1187,7 @@ async function placeButtonAtSelection(button, submenu, contextMenu) {
     // });
 }
 
+/** Reset floating button to default or stored position. */
 function resetButtonPosition(button, submenu, contextMenu) {
     api.storage.sync.get(['defaultFloatingButtonLeft', 'defaultFloatingButtonTop'], function(data) {
         let defaultFloatingButtonLeft = data.defaultFloatingButtonLeft;
@@ -1137,6 +1207,7 @@ function resetButtonPosition(button, submenu, contextMenu) {
     });
 }
 
+/** Toggle single-click mode from submenu. */
 function toggleSingleClick() {
     const enableItem = document.getElementById("pawEnableItem");
     if (enableItem.style.color === "rgb(127, 255, 0)") {
@@ -1149,6 +1220,7 @@ function toggleSingleClick() {
     }
 }
 
+/** Toggle highlight mode from submenu. */
 function toggleHighlight() {
     const highlightItem = document.getElementById("pawHighlight");
     if (highlightItem.style.color === "rgb(127, 255, 0)") {
@@ -1162,6 +1234,7 @@ function toggleHighlight() {
 
 
 // Function to underline selected text and then deselect the text
+/** Underline current selection visually and clear selection. */
 function underlineSelectionAndDeselect() {
     // Clear existing underlines by removing the class and style
     // document.querySelectorAll('.click-underline').forEach(el => {
@@ -1209,6 +1282,7 @@ function underlineSelectionAndDeselect() {
     selection.removeAllRanges();
 }
 
+/** Clear any current text selection. */
 function deselect() {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) {
@@ -1219,6 +1293,7 @@ function deselect() {
 
 
 
+/** Get bounding client rect of current selection if present. */
 function getSelectionBoundaryPosition() {
     const selection = window.getSelection();
     if (selection.rangeCount === 0) {
@@ -1237,6 +1312,7 @@ function getSelectionBoundaryPosition() {
 }
 
 // Async function to position the button at the selected text
+/** Compute and apply button position next to selection using offsets. */
 async function positionButtonAtSelection() {
     const boundary = getSelectionBoundaryPosition();
     const button = document.getElementById("floatingButton");
@@ -1264,6 +1340,7 @@ async function positionButtonAtSelection() {
 /**
  * 显示气泡
  */
+/** Show info bubble near current highlighted node. */
 function showBubble() {
     if (!!currNode) {
         var bubble = $(".xqdd_bubble");
@@ -1291,6 +1368,7 @@ function showBubble() {
  * 处理鼠标移动
  * @param e
  */
+/** Track mouse over highlight to show/hide bubble with debounce. */
 function handleMouseMove(e) {
     //获取鼠标所在节点
     mouseNode = document.elementFromPoint(e.clientX, e.clientY);
@@ -1330,6 +1408,7 @@ function handleMouseMove(e) {
 /**
  * 延迟隐藏气泡
  */
+/** Debounced hide for bubble unless pointer remains within bubble. */
 function hideBubbleDelayed(mouseNode) {
     if (!isAllowHideBubble) {
         if (mouseNode) {
@@ -1348,6 +1427,7 @@ function hideBubbleDelayed(mouseNode) {
 /**
  * 隐藏气泡
  */
+/** Hide the bubble immediately. */
 function hideBubble() {
     if (isAllowHideBubble) {
         $(".xqdd_bubble").css("display", "none");
@@ -1359,6 +1439,7 @@ function hideBubble() {
  * @param nodes 高亮所有节点
  *
  */
+/** Iterate text nodes and replace with highlighted markup where matched. */
 function highlight(nodes) {
     for (var i = 0; i < nodes.length; i++) {
         var node = nodes[i];
@@ -1394,6 +1475,7 @@ function highlight(nodes) {
  * 高亮单个节点
  * @param text
  */
+/** Tokenize a text node, wrap matched words, and return node list. */
 function highlightNode(texts) {
     // console.log("highlightNode");
     // return [$("<span>").css("background", "red").text(texts)[0]]
@@ -1500,6 +1582,7 @@ function highlightNode(texts) {
  * @param text
  * @returns {*}
  */
+/** Wrap a matched word with custom highlight element. */
 function hightlightText(text) {
     // console.log("hightlightText");
     //注意jqury对象转为dom对象使用[0]或者.get(0)
@@ -1515,6 +1598,7 @@ function hightlightText(text) {
  * @param el
  * @returns {Array}
  */
+/** Collect text nodes under element using a TreeWalker and filter. */
 function textNodesUnder(el, filter) {
     // https://developer.mozilla.org/en-US/docs/Web/API/Document/createTreeWalker
     var n, a = [],
@@ -1531,6 +1615,7 @@ function textNodesUnder(el, filter) {
  * @param node
  * @returns {number}
  */
+/** Filter for acceptable parent tag names when auto highlighting. */
 function mygoodfilter(node) {
     var good_tags_list = [
         "PRE",
@@ -1582,6 +1667,7 @@ function mygoodfilter(node) {
  * @param node
  * @returns {number}
  */
+/** Filter for acceptable parent tag names when making words clickable. */
 function clickablefilter(node) {
     var good_tags_list = [
         "PRE",
@@ -1626,6 +1712,7 @@ function clickablefilter(node) {
 /**
  * Close lingq Go Premium button
  */
+/** LingQ: close premium modal and widget automatically when present. */
 function monitor_and_close_premium_popup () {
     var observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
@@ -1651,6 +1738,7 @@ function monitor_and_close_premium_popup () {
 }
 
 
+/** Wrap words in clickable spans inside matched selector. */
 function addInteractivity (selector) {
     $(selector).each(function() {
         if (!clickablefilter(this)) {
@@ -1677,6 +1765,7 @@ var lingqIsSelectedObserver; // Define in a scope accessible by both functions
 /**
  * when single click the sentence item, send to paw
  */
+/** Enable single-click to send on supported sites or generic pages. */
 function enable_clickable_word() {
     if(window.location.hostname === 'www3.nhk.or.jp') {
         addInteractivity("span[class^='color']");
@@ -1783,6 +1872,7 @@ function enable_clickable_word() {
     });
 }
 
+/** Disable single-click interactions and observers. */
 function disable_clickable_word() {
     $(".clickable-word").off("click mouseover mouseout touchstart touchend touchmove").css("background-color", "");
     if (lingqIsSelectedObserver) {
@@ -1792,6 +1882,7 @@ function disable_clickable_word() {
 
 
 // 注入到页面主 world
+/** Inject site bridge script into page world (e.g., Netflix). */
 function waitForNetflixAndExpose() {
     // 创建 <script> 注入到页面主世界
     const s = document.createElement('script');

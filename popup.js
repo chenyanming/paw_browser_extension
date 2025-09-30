@@ -1,3 +1,11 @@
+/**
+ * paw - Popup script
+ *
+ * Responsibilities
+ * - Render toggles for Enable, Single-Click, Auto-Highlight
+ * - Render protocol buttons from stored Protocol(s) config
+ * - Send action messages to active tab content script
+ */
 const api = (typeof browser !== 'undefined') ? browser : chrome;
 
 // Parse the protocol string and return an array of protocol objects
@@ -5,6 +13,9 @@ const api = (typeof browser !== 'undefined') ? browser : chrome;
 // Example: "paw,anki" => [{protocol: "paw"}, {protocol: "anki"}]
 // If the protocol is JSON format, return the parsed JSON array
 // Example: "[{protocol: 'paw'}, {protocol: 'anki'}]"
+/**
+ * Parse Protocol(s) into array of protocol config.
+ */
 function paw_parse_protocol(text) {
     let protocolArray = [];
     try {

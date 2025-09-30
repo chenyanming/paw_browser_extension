@@ -1,3 +1,11 @@
+/**
+ * paw - Background script
+ *
+ * Responsibilities
+ * - Initialize default `storage.sync` keys on install
+ * - Provide cross-browser `api` shim for Chrome/Firefox
+ * - (Optional) Action click handler when popup is disabled
+ */
 const api = (typeof browser !== 'undefined') ? browser : chrome;
 const action = (typeof browser !== 'undefined') ? browser.browserAction : chrome.action;
 // // Only if popup is disable, this part is needed
@@ -21,8 +29,17 @@ const action = (typeof browser !== 'undefined') ? browser.browserAction : chrome
 //     });
 // });
 
+/**
+ * Initialize default extension settings on installation/update.
+ */
 api.runtime.onInstalled.addListener(() => {
-    chrome.storage.sync.get(['isExtensionDisabled', 'isSingleClickDisabled', 'isAutoHighlightDisabled', 'defaultFloatingButtonLeft', 'defaultFloatingButtonTop'], (data) => {
+    chrome.storage.sync.get([
+        'isExtensionDisabled',
+        'isSingleClickDisabled',
+        'isAutoHighlightDisabled',
+        'defaultFloatingButtonLeft',
+        'defaultFloatingButtonTop'
+    ], (data) => {
         if (data.isExtensionDisabled === undefined) {
             chrome.storage.sync.set({ isExtensionDisabled: false });
         }

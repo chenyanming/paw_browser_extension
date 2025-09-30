@@ -1,43 +1,38 @@
-#+title: paw org protocol
-paw org protocol is an Emacs org protocol companion tool with configurable protocol(s).
+#+title: paw - Emacs org-protocol companion extension
 
-The url, title, selected area (body), and the context (note) surrounded the area
-are sent to Emacs via org-protocol.
+Paw is a Chrome/Firefox extension for sending page context (url, title, selected body, surrounding note) to Emacs via org-protocol, with optional server-side features. It adds a floating action button, keyboard shortcut, single-click word capture, and auto-highlighting powered by a local server.
 
-* Download
-1. Firefox & Firefox Android https://addons.mozilla.org/en-US/firefox/addon/emacs-paw
-2. Chrome: https://chromewebstore.google.com/detail/paw/ofhodjclfalelhgjbfmdddekoghamlge
-3. Brave: Same as Chrome, but need to add ~@@||localhost^~ into ~Create custom filters section~ of ~brave://settings/shields/filters~ if you need paw-server features.
+* Store Listings
+1. Firefox & Firefox Android [[https://addons.mozilla.org/en-US/firefox/addon/emacs-paw][addons.mozilla.org/en-US/firefox/addon/emacs-paw]]
+2. Chrome [[https://chromewebstore.google.com/detail/paw/ofhodjclfalelhgjbfmdddekoghamlge][Chrome Web Store]]
+3. Brave: Same as Chrome. If you use paw-server, add ~@@||localhost^~ in ~Create custom filters~ at ~brave://settings/shields/filters~.
+
+* Features
+- Floating "+" button near selection with submenu and protocol actions
+- Keyboard shortcut: modifier + key selects word at caret and sends
+- Single-click mode: wrap words and send selection on click
+- Auto-highlight words returned by paw-server with info bubble
+- Optional site bridges (e.g., Netflix/Disney+) to expose playback controls
+
+* Installation (from source)
+1. Clone this repo or copy the `paw` directory
+2. Chrome-based: ~chrome://extensions~ → Enable Developer Mode → Load unpacked → select this folder
+3. Firefox: ~about:debugging#/runtime/this-firefox~ → Load Temporary Add-on → select ~manifest.json~
+
+Artifacts for distribution are in ~web-ext-artifacts/~.
 
 * Configuration
+Open the extension Options page. Stored keys (in ~storage.sync~):
+- ~isExtensionDisabled~, ~isSingleClickDisabled~, ~isAutoHighlightDisabled~
+- ~shortcutKey~, ~modifierKey~ ("None" | "Ctrl" | "Alt")
+- ~floatingButtonLeft~, ~floatingButtonTop~ (pixel offsets)
+- ~protocol~, ~template~, ~url~, ~title~, ~note~, ~body~
+- ~server~ (default ~http://localhost:5001~)
 
-*** Parameters
-- ~Template~: the template we used for org-capture, it could be empty if you are not using org-capture
-- ~url~: The current page's url
-- ~title~: The current page's title
-- ~note~: The parent sentence of the selected word/area
-- ~body~: The selected word/area
-- ~Server~: The paw-server address
-- ~Protocol(s)~: Please check below section
+** Protocol(s)
+Two formats are supported for ~Protocol(s)~:
 
-*** Protocols
-**** Example: Register an org-protocol of opening the current page's url of chrome in eaf
-#+begin_src emacs-lisp
-
-(add-to-list 'org-protocol-protocol-alist 
-             '("Eaf Browser"
-               :protocol "eaf-browser"
-               :function org-protocol-eaf-browse
-               :kill-client t))
-
-(defun org-protocol-eaf-browse (arg)
-  (let ((url (plist-get arg :url))) ;; we also have title, note, and body, here we only use url as example
-    (eaf-open-browser url))
-  nil)
-#+end_src
-
-Setup the Protocol(s) in chrome extension, we support two types format of Protocol(s):
-***** Json Array (supported from paw extension 1.0.18)
+*** JSON Array (recommended; supported >= 1.0.18)
 #+begin_src js
 [
   { "protocol": "paw", "format": "text" },
@@ -46,51 +41,89 @@ Setup the Protocol(s) in chrome extension, we support two types format of Protoc
   { "protocol": "wallabag", "format": "text", "download": true }
 ]
 #+end_src
-You can choose ~text~ or ~html~ ~format~. It will pass the selected area as ~body~ in org-protocol link to Emacs.
 
-If you install python command line tool [[https://pypi.org/project/emacs-paw/][emacs-paw]], and if ~download~ is true, the current page's html will send to paw-server, saved into ~save-dir~, trigger org-protocol link, finally you can handle the html file in Emacs.
+Supported keys:
+| key       | type                 | description                                                   |
+|-----------+----------------------+---------------------------------------------------------------|
+| protocol  | string               | Emacs org-protocol name                                      |
+| format    | "text" or "html"    | Body format; ~markdown~ is also supported in content script  |
+| download  | boolean              | If ~t~, upload page HTML to paw-server and include file path |
+| deselect  | boolean              | If ~t~, clear selection after triggering                      |
 
-Supported configurations:
-
-| protocol | string               | the protocol in Emacs                                              |
-| format   | string: text or html | If html, will send html to emacs                                   |
-| download | true/false           | If true, the current page's html will send to paw-server           |
-| deselect | true/false           | If true, it will deselect the text after running the org-protocol. |
-
-***** Or comma-sperated text (Old format)
+*** Comma-separated text (legacy)
 #+begin_src text
 paw,eaf-browser
 #+end_src
 
-The body will be ~text~ by default.
+Body defaults to ~text~.
 
-*** paw-server
-[[https://pypi.org/project/emacs-paw/][emacs-paw]] is a python command line tool, it provides a backend flash server to communicate with the extension. It is original part of [[https://github.com/chenyanming/paw][paw.el]], but now it is a complete individual tool that can run without [[https://github.com/chenyanming/paw][paw.el]].
+** Example: org-protocol to open current url in EAF
+#+begin_src emacs-lisp
+(add-to-list 'org-protocol-protocol-alist 
+             '("Eaf Browser"
+               :protocol "eaf-browser"
+               :function org-protocol-eaf-browse
+               :kill-client t))
 
-1. Install python command line tool [[https://pypi.org/project/emacs-paw/][emacs-paw]]
-2. Run paw-server by
-        #+begin_src sh
-        paw run_server --port 5001 --save-dir /tmp/paw_server_html_file.html
-        #+end_src
-        If you installed [[https://github.com/chenyanming/paw][paw.el]], you can also use M-x ~paw-server~
-3. You can handle the html in any org protocol function
-        #+begin_src emacs-lisp
-        (defun paw-server-org-protocol (data)
-          (let* ((url (org-protocol-sanitize-uri (or (plist-get data :url) ""))))
-            (message "URL: %s" url)
-            (when (file-exists-p "/tmp/paw_server_html_file.html")
-              ;; handle the html file here
-              ;; delete the file if you want to
-              (delete-file "/tmp/paw_server_html_file.html"))
-            nil))
-        #+end_src
-        Check more paw-server features on [[https://github.com/chenyanming/paw][paw]].
+(defun org-protocol-eaf-browse (arg)
+  (let ((url (plist-get arg :url)))
+    (eaf-open-browser url))
+  nil)
+#+end_src
 
+* paw-server (optional)
+The Python CLI [[https://pypi.org/project/emacs-paw/][emacs-paw]] provides a small backend (Flask) for advanced flows:
+- POST ~/paw~: receive selection payload from the extension
+- GET ~/words~: serve highlight word list
+- POST ~/source~: receive and persist current page HTML
 
-*** Supported Emacs Packages
-- https://github.com/chenyanming/paw: Send word to Emacs and show on paw-view-note
-- https://github.com/chenyanming/wallabag.el: Open the wallabag article or save the page to wallabag
-- https://github.com/chenyanming/calibredb.el: Open ebook directly in browser
+1. Install: ~pip install emacs-paw~
+2. Run server:
+   #+begin_src sh
+   paw run_server --port 5001 --save-dir /tmp/paw_server_html_file.html
+   #+end_src
+   If you use [[https://github.com/chenyanming/paw][paw.el]], you can also ~M-x paw-server~.
+3. Handle HTML file in Emacs:
+   #+begin_src emacs-lisp
+   (defun paw-server-org-protocol (data)
+     (let* ((url (org-protocol-sanitize-uri (or (plist-get data :url) ""))))
+       (message "URL: %s" url)
+       (when (file-exists-p "/tmp/paw_server_html_file.html")
+         ;; process the HTML file here
+         (delete-file "/tmp/paw_server_html_file.html"))
+       nil))
+   #+end_src
 
-** Similar Projects
-- https://github.com/alphapapa/org-protocol-capture-html
+* Usage
+- Press the toolbar icon to open popup toggles
+- Use the Options page to configure Protocol(s), server, shortcuts, offsets
+- Select text on a page; use the floating "+" to trigger actions
+- Use shortcut (e.g., Alt + s) to grab word under caret and send
+- Enable Auto-Highlight to see known words and hover the bubble for details
+
+* Permissions
+- ~storage~, ~activeTab~
+- ~host_permissions~: ~http://localhost/*~ (only for paw-server features)
+
+* Privacy
+- No data is sent anywhere unless you enable paw-server or trigger org-protocol
+- When ~server~ is set, requests go to your configured local server
+- No usage analytics or third-party telemetry
+
+* Development
+- Manifests: ~manifest.json~ (Chromium MV3), ~manifest-v3.json~, ~manifest-v2.json~ (legacy)
+- Background: ~background.js~ (service worker on MV3)
+- Content: ~content.js~ (UI, capture, highlight, server/org-protocol integration)
+- Popup UI: ~popup.html~, ~popup.js~
+- Options UI: ~options.html~, ~options.js~
+- Bridges: ~netflix-bridge.js~, ~disneyplus-bridge.js~
+
+To package for Firefox, use ~web-ext~; artifacts end up in ~web-ext-artifacts/~.
+
+* Supported Emacs Packages
+- [[https://github.com/chenyanming/paw][paw.el]]: Send word to Emacs and show on paw-view-note
+- [[https://github.com/chenyanming/wallabag.el][wallabag.el]]: Open/save Wallabag entries
+- [[https://github.com/chenyanming/calibredb.el][calibredb.el]]: Open ebook directly in browser
+
+* Similar Projects
+- [[https://github.com/alphapapa/org-protocol-capture-html][org-protocol-capture-html]]

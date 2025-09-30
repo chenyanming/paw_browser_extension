@@ -1,3 +1,11 @@
+/**
+ * paw - Options script
+ *
+ * Responsibilities
+ * - Persist configuration for toggles, shortcuts, offsets
+ * - Persist Protocol(s) and server settings used by content/popup
+ * - Reflect `storage.sync` changes into the UI in real time
+ */
 const api = (typeof browser !== 'undefined') ? browser : chrome;
 document.addEventListener('DOMContentLoaded', function() {
   const toggleButton = document.getElementById('toggleButton');
@@ -74,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
     autoHighlightStatusText.textContent = isAutoHighlightDisabled ? 'OFF' : 'ON';
     api.storage.sync.set({ isAutoHighlightDisabled: isAutoHighlightDisabled });
   });
-  // Save key selection
+  // Save key selection and settings
   saveKeyButton.addEventListener('click', function() {
     // shortcut key setting
     const selectedKey = keySelection.value;

@@ -1,4 +1,8 @@
-// netflix-bridge.js
+/**
+ * netflix-bridge.js
+ * Injected into page world to expose minimal playback controls via `window.paw.netflix`.
+ * Content script communicates by dispatching CustomEvents.
+ */
 (function() {
     function waitForNetflix(cb) {
         if (typeof netflix !== 'undefined' &&

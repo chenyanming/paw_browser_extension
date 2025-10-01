@@ -95,6 +95,7 @@ jobs:
         
     - name: Create Release
       uses: softprops/action-gh-release@v1
+      if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
       with:
         tag_name: ${{ github.ref_name }}
         name: Release ${{ github.ref_name }}
@@ -124,5 +125,3 @@ jobs:
           paw-firefox-${{ steps.version.outputs.VERSION }}.zip
         draft: false
         prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

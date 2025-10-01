@@ -1,7 +1,7 @@
 {
   "name": "paw-extension",
   "version": "1.0.22",
-  "description": "Emacs org-protocol companion extension for Chrome and Firefox",
+  "description": "Enhanced text interaction for Emacs: capture selections, send to org-protocol, with floating button and keyboard shortcuts.",
   "scripts": {
     "package": "./package.sh",
     "package:chrome": "zip -r paw-chrome-$(grep '\"version\"' manifest.json | cut -d'\"' -f4).zip . -x '*.git*' '*.DS_Store*' 'web-ext-artifacts/*' 'package.*' 'manifest-v*.json' 'README.org'",

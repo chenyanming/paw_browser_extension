@@ -31,7 +31,7 @@ Paw is a Chrome/Firefox extension for sending page context (url, title, selected
 * Installation (from source)
 1. Clone this repo or copy the `paw` directory
 2. Chrome-based: ~chrome://extensions~ → Enable Developer Mode → Load unpacked → select this folder
-3. Firefox: ~about:debugging#/runtime/this-firefox~ → Load Temporary Add-on → select ~manifest.json~
+3. Firefox: ~about:debugging#/runtime/this-firefox~ → Load Temporary Add-on → select ~manifest-v2.json~ (Firefox uses MV2 format)
 
 Artifacts for distribution are in ~web-ext-artifacts/~.
 
@@ -126,14 +126,14 @@ The Python CLI [[https://pypi.org/project/emacs-paw/][emacs-paw]] provides a sma
 - No usage analytics or third-party telemetry
 
 * Development
-- Manifests: ~manifest.json~ (Chromium MV3), ~manifest-v3.json~, ~manifest-v2.json~ (legacy)
-- Background: ~background.js~ (service worker on MV3)
+- Manifests: ~manifest.json~ (Chrome MV3), ~manifest-v2.json~ (Firefox MV2), ~manifest-v3.json~ (legacy)
+- Background: ~background.js~ (service worker on Chrome MV3, persistent script on Firefox MV2)
 - Content: ~content.js~ (UI, capture, highlight, server/org-protocol integration)
 - Popup UI: ~popup.html~, ~popup.js~
 - Options UI: ~options.html~, ~options.js~
 - Bridges: ~netflix-bridge.js~, ~disneyplus-bridge.js~
 
-To package for Firefox, use ~web-ext~; artifacts end up in ~web-ext-artifacts/~.
+To package for both browsers, use ~./package.sh~ or ~npm run package~; artifacts end up in ~web-ext-artifacts/~.
 
 * Supported Emacs Packages
 - [[https://github.com/chenyanming/paw][paw.el]]: Send word to Emacs and show on paw-view-note

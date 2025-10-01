@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "paw",
-    "version": "1.0.21",
+    "version": "1.0.22",
     "action": {
         "default_popup": "popup.html",
         "default_icon": {
@@ -23,6 +23,12 @@
             "matches": ["<all_urls>"],
             "js": ["jquery-3.3.1.js", "content.js"],
             "css": ["content_scripts.css"]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": ["netflix-bridge.js"],
+            "matches": ["<all_urls>"]
         }
     ],
     "icons": {

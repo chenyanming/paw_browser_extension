@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Install web-ext
+      run: npm install -g web-ext
+      
+    - name: Lint extension
+      run: |
+        # Backup original manifest.json
+        cp manifest.json manifest-chrome.json
+        
+        # Create Firefox-compatible manifest for linting
+        cp manifest-v2.json manifest.json
+        web-ext lint --source-dir .
+        
+        # Restore original manifest.json
+        cp manifest-chrome.json manifest.json
+        rm -f manifest-chrome.json
+      
+    - name: Validate manifest
+      run: |
+        echo "Validating manifest.json..."
+        node -e "
+          const manifest = JSON.parse(require('fs').readFileSync('manifest.json', 'utf8'));
+          console.log('✓ manifest.json is valid JSON');
+          console.log('✓ Extension name:', manifest.name);
+          console.log('✓ Version:', manifest.version);
+          console.log('✓ Manifest version:', manifest.manifest_version);
+        "
+        
+    - name: Check for required files
+      run: |
+        echo "Checking for required files..."
+        required_files=(
+          "manifest.json"
+          "background.js"
+          "content.js"
+          "popup.html"
+          "popup.js"
+          "options.html"
+          "options.js"
+        )
+        
+        for file in "${required_files[@]}"; do
+          if [ -f "$file" ]; then
+            echo "✓ $file exists"
+          else
+            echo "✗ $file missing"
+            exit 1
+          fi
+        done
+        
+    - name: Test packaging
+      run: |
+        echo "Testing package creation..."
+        ./package.sh
+        echo "✓ Packaging test passed"

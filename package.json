@@ -1,0 +1,32 @@
+{
+  "name": "paw-extension",
+  "version": "1.0.22",
+  "description": "Emacs org-protocol companion extension for Chrome and Firefox",
+  "scripts": {
+    "package": "./package.sh",
+    "package:chrome": "zip -r paw-chrome-$(grep '\"version\"' manifest.json | cut -d'\"' -f4).zip . -x '*.git*' '*.DS_Store*' 'web-ext-artifacts/*' 'package.*' 'manifest-v*.json' 'README.org'",
+    "package:firefox": "web-ext build --source-dir . --artifacts-dir web-ext-artifacts",
+    "lint": "web-ext lint",
+    "test": "web-ext run --firefox-profile=test-profile"
+  },
+  "devDependencies": {
+    "web-ext": "^7.8.0"
+  },
+  "keywords": [
+    "emacs",
+    "org-protocol",
+    "browser-extension",
+    "chrome",
+    "firefox"
+  ],
+  "author": "Damon Chan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/paw-extension.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/paw-extension/issues"
+  },
+  "homepage": "https://github.com/your-username/paw-extension#readme"
+}

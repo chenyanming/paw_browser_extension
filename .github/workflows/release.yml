@@ -1,0 +1,128 @@
+name: Release Extension
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.0.22
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Install web-ext
+      run: npm install -g web-ext
+      
+    - name: Extract version from tag
+      id: version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+    - name: Update manifest version
+      run: |
+        # Update version in all manifest files
+        sed -i.bak "s/\"version\": \".*\"/\"version\": \"${{ steps.version.outputs.VERSION }}\"/" manifest.json
+        sed -i.bak "s/\"version\": \".*\"/\"version\": \"${{ steps.version.outputs.VERSION }}\"/" manifest-v2.json
+        sed -i.bak "s/\"version\": \".*\"/\"version\": \"${{ steps.version.outputs.VERSION }}\"/" manifest-v3.json
+        rm -f *.bak
+        
+    - name: Create Chrome package
+      run: |
+        # Create Chrome package
+        zip -r paw-chrome-${{ steps.version.outputs.VERSION }}.zip \
+          manifest.json \
+          background.js \
+          content.js \
+          popup.html \
+          popup.js \
+          popup.css \
+          options.html \
+          options.js \
+          options.css \
+          content_scripts.css \
+          jquery-3.3.1.js \
+          netflix-bridge.js \
+          images/ \
+          -x "*.git*" "*.DS_Store*" "web-ext-artifacts/*" "package.*" "manifest-v*.json" "README.org" ".github/*"
+          
+    - name: Create Firefox package
+      run: |
+        # Backup original manifest.json
+        cp manifest.json manifest-chrome.json
+        
+        # Create Firefox-compatible manifest
+        cp manifest-v2.json manifest.json
+        sed -i.bak "s/\"version\": \".*\"/\"version\": \"${{ steps.version.outputs.VERSION }}\"/" manifest.json
+        rm -f manifest.json.bak
+        
+        # Create Firefox package using web-ext
+        web-ext build --source-dir . --artifacts-dir . --filename paw-firefox-${{ steps.version.outputs.VERSION }}.zip
+        
+        # Restore original manifest.json
+        cp manifest-chrome.json manifest.json
+        rm -f manifest-chrome.json
+        
+    - name: Validate packages
+      run: |
+        echo "Validating Chrome package..."
+        unzip -l paw-chrome-${{ steps.version.outputs.VERSION }}.zip | grep -q "manifest.json" && echo "✓ Chrome manifest.json found" || echo "✗ Chrome manifest.json missing"
+        
+        echo "Validating Firefox package..."
+        unzip -l paw-firefox-${{ steps.version.outputs.VERSION }}.zip | grep -q "manifest.json" && echo "✓ Firefox manifest.json found" || echo "✗ Firefox manifest.json missing"
+        
+    - name: Upload Chrome package
+      uses: actions/upload-artifact@v4
+      with:
+        name: paw-chrome-${{ steps.version.outputs.VERSION }}
+        path: paw-chrome-${{ steps.version.outputs.VERSION }}.zip
+        
+    - name: Upload Firefox package
+      uses: actions/upload-artifact@v4
+      with:
+        name: paw-firefox-${{ steps.version.outputs.VERSION }}
+        path: paw-firefox-${{ steps.version.outputs.VERSION }}.zip
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ github.ref_name }}
+        name: Release ${{ github.ref_name }}
+        body: |
+          ## Changes in ${{ github.ref_name }}
+          
+          ### Chrome Web Store
+          - Upload `paw-chrome-${{ steps.version.outputs.VERSION }}.zip` to [Chrome Web Store Developer Console](https://chrome.google.com/webstore/devconsole/)
+          
+          ### Firefox Add-ons
+          - Upload `paw-firefox-${{ steps.version.outputs.VERSION }}.zip` to [Firefox Add-ons Developer Hub](https://addons.mozilla.org/developers/)
+          
+          ### Installation
+          - Download the appropriate package for your browser
+          - Chrome: Load unpacked extension from the zip contents
+          - Firefox: Load temporary add-on from the zip contents
+          
+          ### Features
+          - Floating action button with configurable visibility
+          - Keyboard shortcuts for word capture
+          - Single-click mode for word selection
+          - Auto-highlighting with info bubbles
+          - Org-protocol integration
+          - Optional paw-server support
+        files: |
+          paw-chrome-${{ steps.version.outputs.VERSION }}.zip
+          paw-firefox-${{ steps.version.outputs.VERSION }}.zip
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -12,7 +12,7 @@ Paw is a Chrome/Firefox extension for sending page context (url, title, selected
 - Keyboard shortcut: modifier + key selects word at caret and sends
 - Single-click mode: wrap words and send selection on click
 - Auto-highlight words returned by paw-server with info bubble
-- Optional site bridges (e.g., Netflix/Disney+) to expose playback controls
+- Optional site bridges (e.g., Netflix) to expose playback controls
 
 * Plan and Roadmap
 ** Current (original) features
@@ -131,7 +131,7 @@ The Python CLI [[https://pypi.org/project/emacs-paw/][emacs-paw]] provides a sma
 - Content: ~content.js~ (UI, capture, highlight, server/org-protocol integration)
 - Popup UI: ~popup.html~, ~popup.js~
 - Options UI: ~options.html~, ~options.js~
-- Bridges: ~netflix-bridge.js~, ~disneyplus-bridge.js~
+- Bridges: ~netflix-bridge.js~
 
 To package for both browsers, use ~./package.sh~ or ~npm run package~; artifacts end up in ~web-ext-artifacts/~.
 

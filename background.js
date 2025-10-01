@@ -37,6 +37,7 @@ api.runtime.onInstalled.addListener(() => {
         'isExtensionDisabled',
         'isSingleClickDisabled',
         'isAutoHighlightDisabled',
+        'isShowButtonDisabled',
         'defaultFloatingButtonLeft',
         'defaultFloatingButtonTop'
     ], (data) => {
@@ -48,6 +49,9 @@ api.runtime.onInstalled.addListener(() => {
         }
         if (data.isAutoHighlightDisabled === undefined) {
             chrome.storage.sync.set({ isAutoHighlightDisabled: true });
+        }
+        if (data.isShowButtonDisabled === undefined) {
+            chrome.storage.sync.set({ isShowButtonDisabled: true });
         }
         if (data.defaultFloatingButtonLeft === undefined) {
             chrome.storage.sync.set({ defaultFloatingButtonLeft: '' });

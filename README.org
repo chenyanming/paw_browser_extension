@@ -14,6 +14,20 @@ Paw is a Chrome/Firefox extension for sending page context (url, title, selected
 - Auto-highlight words returned by paw-server with info bubble
 - Optional site bridges (e.g., Netflix/Disney+) to expose playback controls
 
+* Plan and Roadmap
+** Current (original) features
+- Floating action button with submenu and context menu based on ~Protocol(s)~
+- Keyboard shortcut (default Alt + s) to capture word under caret
+- Single-click mode to wrap words and send selection to Emacs/paw-server
+- Auto-highlight from ~GET /words~ with info bubble (check, delete, view)
+- Org-protocol integration with support for ~text~, ~html~, and optional ~markdown~ formats
+- Fallback to org-protocol if ~POST /paw~ fails
+- Save full page HTML via ~POST /source~ and optional Wallabag save
+- Options page for toggles, shortcuts, offsets, Protocol(s), and server
+- Popup toggles for Enable, Single-Click, Auto-Highlight, Show Button and quick protocol actions
+- Netflix page bridge exposing play/pause/seek via injected script
+
+
 * Installation (from source)
 1. Clone this repo or copy the `paw` directory
 2. Chrome-based: ~chrome://extensions~ → Enable Developer Mode → Load unpacked → select this folder
@@ -23,7 +37,7 @@ Artifacts for distribution are in ~web-ext-artifacts/~.
 
 * Configuration
 Open the extension Options page. Stored keys (in ~storage.sync~):
-- ~isExtensionDisabled~, ~isSingleClickDisabled~, ~isAutoHighlightDisabled~
+- ~isExtensionDisabled~, ~isSingleClickDisabled~, ~isAutoHighlightDisabled~, ~isShowButtonDisabled~
 - ~shortcutKey~, ~modifierKey~ ("None" | "Ctrl" | "Alt")
 - ~floatingButtonLeft~, ~floatingButtonTop~ (pixel offsets)
 - ~protocol~, ~template~, ~url~, ~title~, ~note~, ~body~
@@ -100,6 +114,7 @@ The Python CLI [[https://pypi.org/project/emacs-paw/][emacs-paw]] provides a sma
 - Select text on a page; use the floating "+" to trigger actions
 - Use shortcut (e.g., Alt + s) to grab word under caret and send
 - Enable Auto-Highlight to see known words and hover the bubble for details
+- Toggle "Show Button" to hide floating button by default; it will still appear when text is selected
 
 * Permissions
 - ~storage~, ~activeTab~

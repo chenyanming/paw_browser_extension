@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const autoHighlightStatusText = document.getElementById('autoHighlightStatusText');
   const singleClickButton = document.getElementById('singleClickButton');
   const singleClickStatusText = document.getElementById('singleClickButton');
+  const showButtonButton = document.getElementById('showButtonButton');
+  const showButtonStatusText = document.getElementById('showButtonStatusText');
   const keySelection = document.getElementById('key-selection');
   const floatingButtonLeftSelection = document.getElementById('floating-button-left');
   const floatingButtonTopSelection = document.getElementById('floating-button-top');
@@ -33,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
     'isExtensionDisabled',
     'isSingleClickDisabled',
     'isAutoHighlightDisabled',
+    'isShowButtonDisabled',
     'shortcutKey',
     'modifierKey',
     'floatingButtonLeft',
@@ -51,6 +54,8 @@ document.addEventListener('DOMContentLoaded', function() {
     singleClickStatusText.textContent = data.isSingleClickDisabled ? 'OFF' : 'ON';
     autoHighlightButton.checked = !data.isAutoHighlightDisabled;
     autoHighlightStatusText.textContent = data.isAutoHighlightDisabled ? 'OFF' : 'ON';
+    showButtonButton.checked = !data.isShowButtonDisabled;
+    showButtonStatusText.textContent = data.isShowButtonDisabled ? 'OFF' : 'ON';
     keySelection.value = data.shortcutKey || 's';
     modifierSelection.value = data.modifierKey || 'Alt';
     floatingButtonLeftSelection.value = data.floatingButtonLeft || '10';
@@ -81,6 +86,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const isAutoHighlightDisabled = !autoHighlightButton.checked;
     autoHighlightStatusText.textContent = isAutoHighlightDisabled ? 'OFF' : 'ON';
     api.storage.sync.set({ isAutoHighlightDisabled: isAutoHighlightDisabled });
+  });
+
+  // Toggle show button state
+  showButtonButton.addEventListener('change', function() {
+    const isShowButtonDisabled = !showButtonButton.checked;
+    showButtonStatusText.textContent = isShowButtonDisabled ? 'OFF' : 'ON';
+    api.storage.sync.set({ isShowButtonDisabled: isShowButtonDisabled });
   });
   // Save key selection and settings
   saveKeyButton.addEventListener('click', function() {
@@ -141,6 +153,10 @@ document.addEventListener('DOMContentLoaded', function() {
       if (key === 'isAutoHighlightDisabled') {
         autoHighlightButton.checked = !newValue;
         autoHighlightStatusText.textContent = newValue ? 'OFF' : 'ON';
+      }
+      if (key === 'isShowButtonDisabled') {
+        showButtonButton.checked = !newValue;
+        showButtonStatusText.textContent = newValue ? 'OFF' : 'ON';
       }
     }
   });

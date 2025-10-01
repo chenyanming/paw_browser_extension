@@ -78,9 +78,11 @@ document.addEventListener('DOMContentLoaded', function () {
     let button = document.getElementById('toggleButton');
     let autoHighlightButton = document.getElementById('autoHighlightButton');
     let singleClickButton = document.getElementById('singleClickButton');
+    let showButtonButton = document.getElementById('showButtonButton');
     let statusText = document.getElementById('statusText');
     let autoHighlightStatusText = document.getElementById('autoHighlightStatusText');
     let singleClickStatusText = document.getElementById('singleClickStatusText');
+    let showButtonStatusText = document.getElementById('showButtonStatusText');
     // Set the initial state of the switch and status text
     api.storage.sync.get('isExtensionDisabled', function(data) {
         let isExtensionDisabled = data.isExtensionDisabled;
@@ -120,5 +122,19 @@ document.addEventListener('DOMContentLoaded', function () {
         let isSingleClickDisabled = !singleClickButton.checked; // Toggle the state
         singleClickStatusText.textContent = singleClickButton ? 'OFF' : 'ON'; // Update status text
         api.storage.sync.set({isSingleClickDisabled: isSingleClickDisabled});
+    });
+
+    // Set the initial state of the show button switch and status text
+    api.storage.sync.get('isShowButtonDisabled', function(data) {
+        let isShowButtonDisabled = data.isShowButtonDisabled;
+        showButtonButton.checked = !isShowButtonDisabled;
+        showButtonStatusText.textContent = isShowButtonDisabled ? 'OFF' : 'ON';
+    });
+
+    // Attach an event listener for when the show button switch is toggled
+    showButtonButton.addEventListener('change', function() {
+        let isShowButtonDisabled = !showButtonButton.checked; // Toggle the state
+        showButtonStatusText.textContent = isShowButtonDisabled ? 'OFF' : 'ON'; // Update status text
+        api.storage.sync.set({isShowButtonDisabled: isShowButtonDisabled});
     });
 });

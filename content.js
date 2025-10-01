@@ -124,7 +124,7 @@ function toggleButtonVisibility() {
 }
 
 
-api.storage.sync.get('isExtensionDisabled', function(data) {
+api.storage.sync.get(['isExtensionDisabled', 'isShowButtonDisabled'], function(data) {
     if(data.isExtensionDisabled) {
         console.log("The extension is disabled");
         // Perform actions if the extension is disabled.
@@ -134,6 +134,7 @@ api.storage.sync.get('isExtensionDisabled', function(data) {
         // console.log("The extension is enabled");
         // Perform actions if the extension is enabled.
         $(function () {
+            // Always create button so it can appear on text selection
             createButton();
             console.log("createButton done");
             waitForNetflixAndExpose();
@@ -183,6 +184,7 @@ if (window.top === window) {
                     // console.log('Single Click Mode was:', oldValue ? 'Disabled' : 'Enabled');
                     console.log('Extension is now:', newValue ? 'Disabled' : 'Enabled');
                     if (!newValue) {
+                        // Always create button when extension is enabled
                         createButton();
                         // floatingButton.style.display = "block";
                     } else {
@@ -193,6 +195,26 @@ if (window.top === window) {
                         // floatingButton.style.display = "none";
                         // contextMenu.style.display = "none";
                         // submenu.style.display = "none";
+                    }
+                }
+
+                if(key === 'isShowButtonDisabled') {
+                    console.log('Show Button is now:', newValue ? 'Disabled' : 'Enabled');
+                    // Don't delete button, just hide/show it based on current selection
+                    const button = document.getElementById("floatingButton");
+                    if (button) {
+                        const selection = window.getSelection();
+                        if (selection.toString().length > 0) {
+                            // Always show when text is selected
+                            button.style.display = "block";
+                        } else {
+                            // Hide when no selection and show button is disabled
+                            if (newValue) {
+                                button.style.display = "none";
+                            } else {
+                                button.style.display = "block";
+                            }
+                        }
                     }
                 }
 
@@ -1043,6 +1065,13 @@ function createButton() {
         isDragging = false;
     }, 100);
 
+    // Initially hide button if show button is disabled
+    api.storage.sync.get('isShowButtonDisabled', function(data) {
+        if (data.isShowButtonDisabled) {
+            button.style.display = "none";
+        }
+    });
+
     // Show/hide submenu on hover or click
     button.addEventListener('mouseenter', () => {
         // console.log("Button Mouseenter");
@@ -1176,9 +1205,17 @@ async function placeButtonAtSelection(button, submenu, contextMenu) {
     // after selection, set the button position relative to selection area
     const selection = window.getSelection();
     if (selection.toString().length > 0) { // Check if there is a text selection
+        // ALWAYS show button when text is selected, regardless of show button setting
         await positionButtonAtSelection();
     } else {
-        resetButtonPosition(button, submenu, contextMenu);
+        // Check if show button is disabled - if so, hide the button when no selection
+        api.storage.sync.get('isShowButtonDisabled', function(data) {
+            if (data.isShowButtonDisabled) {
+                button.style.display = "none";
+            } else {
+                resetButtonPosition(button, submenu, contextMenu);
+            }
+        });
     }
     // FIXME Unstable
     // let buttonPostionPercentage = getButtonPositionPercentage(button);

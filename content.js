@@ -1357,18 +1357,41 @@ async function positionButtonAtSelection() {
         const settings = await getFloatingButtonSettings();
         const floatingButtonLeft = parseInt(settings['floatingButtonLeft'] || '10');
         const floatingButtonTop = parseInt(settings['floatingButtonTop'] || '-10');
-        if (boundary.right > 0 && boundary.top > 0) {
-            button.style.left = `${boundary.right + floatingButtonLeft}px`;
-            button.style.top = `${boundary.top - button.offsetHeight + floatingButtonTop}px`;
-        } else if (boundary.right > 0 && boundary.bottom > 0) {
-            button.style.left = `${boundary.right + floatingButtonLeft}px`;
-            button.style.top = `${boundary.bottom - button.offsetHeight + floatingButtonTop}px`;
-        } else {
-            api.storage.sync.get(['defaultFloatingButtonLeft', 'defaultFloatingButtonTop'], function(data) {
-                button.style.left = `${boundary.right + floatingButtonLeft}px`;
-                button.style.top = `${boundary.bottom - button.offsetHeight + floatingButtonTop}px`;
-            });
+
+        // Ensure button is visible to get accurate dimensions
+        const wasHidden = button.style.display === "none";
+        if (wasHidden) {
+            button.style.visibility = "hidden";
+            button.style.display = "block";
         }
+
+        // Get consistent button height
+        const buttonHeight = button.offsetHeight || 40; // fallback to default height
+
+        if (wasHidden) {
+            button.style.display = "none";
+            button.style.visibility = "";
+        }
+
+        // Always position relative to selection boundary
+        let targetLeft, targetTop;
+
+        if (boundary.right > 0 && boundary.top > 0) {
+            targetLeft = boundary.right + floatingButtonLeft;
+            targetTop = boundary.top - buttonHeight + floatingButtonTop;
+        } else if (boundary.right > 0 && boundary.bottom > 0) {
+            targetLeft = boundary.right + floatingButtonLeft;
+            targetTop = boundary.bottom - buttonHeight + floatingButtonTop;
+        } else {
+            // If boundary positioning fails, use selection center as fallback
+            const centerX = boundary.left + (boundary.width / 2);
+            const centerY = boundary.top + (boundary.height / 2);
+            targetLeft = centerX + floatingButtonLeft;
+            targetTop = centerY - buttonHeight + floatingButtonTop;
+        }
+
+        button.style.left = `${targetLeft}px`;
+        button.style.top = `${targetTop}px`;
         button.style.display = "block";  // Make the button visible
     }
 }

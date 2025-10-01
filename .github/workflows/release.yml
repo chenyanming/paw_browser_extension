@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*.*.*'  # Triggers on version tags like v1.0.22
 
+permissions:
+  contents: write  # This is required for creating releases
+
 jobs:
   package:
     runs-on: ubuntu-latest
@@ -125,3 +128,5 @@ jobs:
           paw-firefox-${{ steps.version.outputs.VERSION }}.zip
         draft: false
         prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

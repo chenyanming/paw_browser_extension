@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "paw",
-    "version": "1.0.22",
+    "version": "1.0.23",
     "description": "Enhanced text interaction for Emacs: capture selections, send to org-protocol, with floating button and keyboard shortcuts.",
     "browser_action": {
         "default_popup": "popup.html",

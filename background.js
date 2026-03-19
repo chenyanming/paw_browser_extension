@@ -32,6 +32,22 @@ const action = (typeof browser !== 'undefined') ? browser.browserAction : chrome
 /**
  * Initialize default extension settings on installation/update.
  */
+/**
+ * Proxy fetch requests from content scripts to bypass Private Network Access (PNA) restrictions.
+ * Content scripts running on public sites cannot directly fetch localhost; background scripts can.
+ */
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'fetch') {
+        fetch(message.url, message.options)
+            .then(async response => {
+                const text = await response.text();
+                sendResponse({ ok: response.ok, status: response.status, text });
+            })
+            .catch(err => sendResponse({ error: err.message }));
+        return true; // Keep the message channel open for async response
+    }
+});
+
 api.runtime.onInstalled.addListener(() => {
     chrome.storage.sync.get([
         'isExtensionDisabled',

@@ -23,6 +23,38 @@ console.log("Hello from paw.js");
 const api = (typeof browser !== 'undefined') ? browser : chrome;
 
 /**
+ * Proxy fetch calls through the background service worker to avoid Chrome's
+ * Private Network Access (PNA) restrictions, which block content scripts on
+ * public sites from directly fetching localhost.
+ */
+function backgroundFetch(url, options) {
+    return new Promise((resolve, reject) => {
+        api.runtime.sendMessage({
+            type: 'fetch',
+            url,
+            options: options ? {
+                method: options.method,
+                headers: options.headers,
+                body: options.body
+            } : undefined
+        }, response => {
+            if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError.message));
+            } else if (response && response.error) {
+                reject(new Error(response.error));
+            } else {
+                resolve({
+                    ok: response.ok,
+                    status: response.status,
+                    json: () => Promise.resolve(JSON.parse(response.text)),
+                    text: () => Promise.resolve(response.text)
+                });
+            }
+        });
+    });
+}
+
+/**
  * Load shortcut and modifier from storage.
  * @returns {Promise<{shortcutKey?: string, modifierKey?: ("Ctrl"|"Alt"|"None")}>}
  */
@@ -532,7 +564,7 @@ function paw_post_to_python(item, parent, body_selection_html, body_selection_te
 
         // If download is true, get html_file first
         function sendPayload() {
-            fetch(`${server}/paw`, {
+            backgroundFetch(`${server}/paw`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -672,7 +704,7 @@ var currWordData;
 function send_html_to_python(callback) {
     api.storage.sync.get('server', function(data) {
         let server = data.server || "http://localhost:5001";
-        fetch(`${server}/source`, {
+        backgroundFetch(`${server}/source`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -698,7 +730,7 @@ function save_to_wallabag() {
     let title = document.title;
     let content = document.documentElement.outerHTML;
 
-    fetch(`${server}/wallabag/entry`, {
+    backgroundFetch(`${server}/wallabag/entry`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -732,7 +764,7 @@ function highlight_words() {
         //         }
         //     }
         // };
-        fetch(`${server}/words`)
+        backgroundFetch(`${server}/words`)
             .then(response => response.json())
             .then(data => {
                 // console.log(JSON.stringify(data, null, 2));
@@ -833,7 +865,7 @@ function createBubble() {
             if (window.confirm(`Delete word: ${currWordData.word}?`)) {
                 api.storage.sync.get('server', function(data) {
                     let server = data.server || "http://localhost:5001";
-                    fetch(`${server}/words`, {
+                    backgroundFetch(`${server}/words`, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json'

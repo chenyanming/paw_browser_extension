@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [ main, master, develop ]
+    tags: [ 'v*.*.*' ]
   pull_request:
     branches: [ main, master, develop ]
 
@@ -17,7 +18,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
         cache: 'npm'
         
     - name: Install dependencies

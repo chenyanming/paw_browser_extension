@@ -1,6 +1,6 @@
 {
   "name": "paw-extension",
-  "version": "1.0.22",
+  "version": "1.0.24",
   "description": "Enhanced text interaction for Emacs: capture selections, send to org-protocol, with floating button and keyboard shortcuts.",
   "scripts": {
     "package": "./package.sh",

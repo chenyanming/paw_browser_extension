@@ -1,83 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Paw Configuration</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="stylesheet" type="text/css" href="options.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PAW — Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="options.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Paw Configuration</h1>
-    <label>
-      <input type="checkbox" id="toggleButton">
-      <span>Enable: <span id="statusText">OFF</span></span>
-    </label>
-    <label>
-      <input type="checkbox" id="singleClickButton">
-      <span>Single-Click on all pages: <span id="singleClickstatusText">OFF</span></span>
-    </label>
-    <label>
-      <input type="checkbox" id="autoHighlightButton">
-      <span>Auto-Highlight on all pages: <span id="autoHighlightStatusText">OFF</span></span>
-    </label>
-    <label>
-      <input type="checkbox" id="showButtonButton">
-      <span>Show Button on all pages: <span id="showButtonStatusText">OFF</span></span>
-    </label>
-    <label>
-      <span>Shortcut Key:</span>
-      <input type="text" id="key-selection" maxlength="1">
-    </label>
-    <label>
-      <span>Modifier Key:</span>
-      <select id="modifier-selection">
-        <option value="None">None</option>
-        <option value="Ctrl">Ctrl</option>
-        <option value="Alt">Alt</option>
-      </select>
-    </label>
-    <label>
-      <span>Floating Button Left Offset:</span>
-      <input type="number" id="floating-button-left" min="-1000" max="1000">
-    </label>
-    <label>
-      <span>Floating Button Top Offset:</span>
-      <input type="number" id="floating-button-top" min="-1000" max="1000">
-    </label>
-    <label>
-      <span>Protocol(s):</span>
-      <input type="text" id="protocol" value="paw">
-    </label>
-    <label>
-      <span>Template:</span>
-      <input type="text" id="template" value="w" maxlength="1">
-    </label>
-    <label>
-      <span>Url:</span>
-      <input type="text" id="url" value="url">
-    </label>
-    <label>
-      <span>Title:</span>
-      <input type="text" id="title" value="title">
-    </label>
-    <label>
-      <span>Note:</span>
-      <input type="text" id="note" value="note">
-    </label>
-    <label>
-      <span>Body:</span>
-      <input type="text" id="body" value="body">
-    </label>
-    <label>
-      <span>Server:</span>
-      <input type="text" id="server" value="http://localhost:5001">
-    </label>
-    <button id="save-key">Save</button>
-  </div>
-  <footer>
-    <p>Damon Chan &copy; 2025</p>
+
+  <header class="o-header" role="banner">
+    <div class="o-header-inner">
+      <img src="images/icon48.png" class="o-logo" alt="PAW logo" width="28" height="28">
+      <div class="o-titles">
+        <span class="o-wordmark">PAW</span>
+        <span class="o-subtitle">Settings</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="o-main">
+
+    <!-- ── Extension Toggles ─────────────────────────────── -->
+    <section class="o-card" aria-label="Extension settings">
+      <h2 class="o-card-title">Extension</h2>
+
+      <div class="o-toggle-row">
+        <div class="o-toggle-info">
+          <label class="o-label" for="toggleButton">Enable</label>
+          <span class="o-hint">Master switch for all PAW features</span>
+        </div>
+        <div class="o-toggle-right">
+          <span class="o-badge" id="statusText" aria-live="polite"></span>
+          <label class="o-switch">
+            <input type="checkbox" id="toggleButton" role="switch" aria-label="Enable extension">
+            <span class="o-track" aria-hidden="true"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="o-toggle-row">
+        <div class="o-toggle-info">
+          <label class="o-label" for="singleClickButton">Single-Click</label>
+          <span class="o-hint">Click any word to send it instantly</span>
+        </div>
+        <div class="o-toggle-right">
+          <span class="o-badge" id="singleClickstatusText" aria-live="polite"></span>
+          <label class="o-switch">
+            <input type="checkbox" id="singleClickButton" role="switch" aria-label="Enable single-click mode">
+            <span class="o-track" aria-hidden="true"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="o-toggle-row">
+        <div class="o-toggle-info">
+          <label class="o-label" for="autoHighlightButton">Auto-Highlight</label>
+          <span class="o-hint">Highlight words already in your vocabulary</span>
+        </div>
+        <div class="o-toggle-right">
+          <span class="o-badge" id="autoHighlightStatusText" aria-live="polite"></span>
+          <label class="o-switch">
+            <input type="checkbox" id="autoHighlightButton" role="switch" aria-label="Enable auto-highlight">
+            <span class="o-track" aria-hidden="true"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="o-toggle-row">
+        <div class="o-toggle-info">
+          <label class="o-label" for="showButtonButton">Show Button</label>
+          <span class="o-hint">Show the floating "+" button on selection</span>
+        </div>
+        <div class="o-toggle-right">
+          <span class="o-badge" id="showButtonStatusText" aria-live="polite"></span>
+          <label class="o-switch">
+            <input type="checkbox" id="showButtonButton" role="switch" aria-label="Show floating button">
+            <span class="o-track" aria-hidden="true"></span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Keyboard Shortcut ─────────────────────────────── -->
+    <section class="o-card" aria-label="Keyboard shortcut">
+      <h2 class="o-card-title">Keyboard Shortcut</h2>
+      <div class="o-field-grid">
+        <div class="o-field">
+          <label class="o-label" for="modifier-selection">Modifier</label>
+          <select id="modifier-selection" class="o-select">
+            <option value="None">None</option>
+            <option value="Ctrl">Ctrl</option>
+            <option value="Alt">Alt</option>
+          </select>
+        </div>
+        <div class="o-field">
+          <label class="o-label" for="key-selection">Key</label>
+          <input type="text" id="key-selection" class="o-input o-input-char"
+                 maxlength="1" placeholder="s" spellcheck="false"
+                 aria-label="Shortcut key (single character)">
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Floating Button ───────────────────────────────── -->
+    <section class="o-card" aria-label="Floating button position">
+      <h2 class="o-card-title">Floating Button Offset</h2>
+      <p class="o-card-desc">Pixel offset from the selected text anchor point.</p>
+      <div class="o-field-grid">
+        <div class="o-field">
+          <label class="o-label" for="floating-button-left">Left (px)</label>
+          <input type="number" id="floating-button-left" class="o-input"
+                 min="-1000" max="1000" placeholder="10">
+        </div>
+        <div class="o-field">
+          <label class="o-label" for="floating-button-top">Top (px)</label>
+          <input type="number" id="floating-button-top" class="o-input"
+                 min="-1000" max="1000" placeholder="-10">
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Server & Protocol ─────────────────────────────── -->
+    <section class="o-card" aria-label="Server and protocol settings">
+      <h2 class="o-card-title">Server &amp; Protocol</h2>
+
+      <div class="o-field">
+        <label class="o-label" for="server">paw-server URL</label>
+        <span class="o-hint">Address of your local paw-server instance</span>
+        <input type="text" id="server" class="o-input o-input-mono"
+               placeholder="http://localhost:5001" spellcheck="false"
+               aria-describedby="server-hint">
+        <span id="server-hint" class="o-hint">Default: http://localhost:5001</span>
+      </div>
+
+      <div class="o-field">
+        <label class="o-label" for="protocol">Protocol(s)</label>
+        <span class="o-hint">JSON array of protocol objects. Each can include <code>protocol</code>, <code>format</code>, <code>download</code>, etc.</span>
+        <div class="o-textarea-wrap">
+          <textarea id="protocol" class="o-input o-input-mono o-textarea"
+                    rows="6" spellcheck="false" autocomplete="off"
+                    aria-describedby="protocol-error"
+                    placeholder='[&#10;  { "protocol": "paw" }&#10;]'></textarea>
+          <span class="o-json-status" id="protocol-error" aria-live="polite"></span>
+        </div>
+      </div>
+
+      <div class="o-field o-field-narrow">
+        <label class="o-label" for="template">Template key</label>
+        <span class="o-hint">Single character passed as <code>?template=</code></span>
+        <input type="text" id="template" class="o-input o-input-char o-input-mono"
+               maxlength="1" placeholder="w" spellcheck="false">
+      </div>
+    </section>
+
+    <!-- ── Field Name Mappings ───────────────────────────── -->
+    <section class="o-card" aria-label="Field name mappings">
+      <h2 class="o-card-title">Field Names</h2>
+      <p class="o-card-desc">Query-parameter key names used when building the org-protocol URL.</p>
+      <div class="o-field-grid o-field-grid-4">
+        <div class="o-field">
+          <label class="o-label" for="url">URL key</label>
+          <input type="text" id="url" class="o-input o-input-mono" placeholder="url" spellcheck="false">
+        </div>
+        <div class="o-field">
+          <label class="o-label" for="title">Title key</label>
+          <input type="text" id="title" class="o-input o-input-mono" placeholder="title" spellcheck="false">
+        </div>
+        <div class="o-field">
+          <label class="o-label" for="note">Note key</label>
+          <input type="text" id="note" class="o-input o-input-mono" placeholder="note" spellcheck="false">
+        </div>
+        <div class="o-field">
+          <label class="o-label" for="body">Body key</label>
+          <input type="text" id="body" class="o-input o-input-mono" placeholder="body" spellcheck="false">
+        </div>
+      </div>
+    </section>
+
+    <div class="o-actions">
+      <button id="save-key" class="o-save-btn" type="button">Save Settings</button>
+    </div>
+
+  </main>
+
+  <footer class="o-footer">
+    <p>Damon Chan &copy; 2025 · <a href="https://github.com" target="_blank" rel="noopener">PAW</a></p>
   </footer>
+
   <script src="options.js"></script>
 </body>
 </html>

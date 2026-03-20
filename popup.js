@@ -2,139 +2,154 @@
  * paw - Popup script
  *
  * Responsibilities
- * - Render toggles for Enable, Single-Click, Auto-Highlight
+ * - Render toggles for Enable, Single-Click, Auto-Highlight, Show Button
  * - Render protocol buttons from stored Protocol(s) config
  * - Send action messages to active tab content script
+ * - Capture tabs (with close) and open tab manager
  */
 const api = (typeof browser !== 'undefined') ? browser : chrome;
 
-// Parse the protocol string and return an array of protocol objects
-// Each object contains a protocol key
-// Example: "paw,anki" => [{protocol: "paw"}, {protocol: "anki"}]
-// If the protocol is JSON format, return the parsed JSON array
-// Example: "[{protocol: 'paw'}, {protocol: 'anki'}]"
 /**
- * Parse Protocol(s) into array of protocol config.
+ * Parse Protocol(s) string into array of protocol config objects.
+ * Supports JSON array format or comma-separated: "paw,anki"
  */
 function paw_parse_protocol(text) {
-    let protocolArray = [];
     try {
-        // 尝试解析 JSON 格式的协议
-        let jsonProtocol = JSON.parse(text);
-        protocolArray = Array.isArray(jsonProtocol) ? jsonProtocol : [jsonProtocol];
+        const parsed = JSON.parse(text);
+        return Array.isArray(parsed) ? parsed : [parsed];
     } catch (e) {
-        // 如果不是 JSON，则使用逗号分割格式
-        protocolArray = (text || 'paw').split(',').map(p => ({ protocol: p }));
+        return (text || 'paw').split(',').map(p => ({ protocol: p.trim() }));
     }
-    return protocolArray;
 }
 
-let contextMenu = document.getElementById('contextMenu');
-// Create the contextMenu
+/** Set status badge text and green "on" highlight class. */
+function setBadge(el, isEnabled) {
+    el.textContent = isEnabled ? 'ON' : 'OFF';
+    el.classList.toggle('on', isEnabled);
+}
+
+// ── Protocol buttons ──────────────────────────────────────────────────────────
+const contextMenu = document.getElementById('contextMenu');
+
 api.storage.sync.get(['protocol'], function(data) {
-    let protocolArray = paw_parse_protocol(data.protocol);
-    console.log(protocolArray);
-    // Add context menu items based on the protocol array
-    for (let i in protocolArray) {
-        let button = document.createElement('button');
+    const protocolArray = paw_parse_protocol(data.protocol);
+
+    for (let i = 0; i < protocolArray.length; i++) {
+        const button = document.createElement('button');
         button.className = 'protocol-item';
         button.id = 'orgProtocolItem' + i;
         button.textContent = protocolArray[i].protocol;
         contextMenu.appendChild(button);
     }
-    // contextMenu.style.display = "none"; // Initially hidden
-    // Append the contextMenu to the body
-    if (protocolArray.length > 0) {
-        document.documentElement.appendChild(contextMenu);
 
-        for (let i in protocolArray) {
-            // Add click event listeners for contextMenu items
-            document.getElementById("orgProtocolItem" + i).addEventListener("click", () => {
-                console.log("Button Click");
-                // 获取当前活动的标签页
-                api.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                    const activeTab = tabs[0].id;
-
-                    // 向 content.js 发送消息
-                    api.tabs.sendMessage(activeTab, {
-                        action: "send_to_paw",
-                        selectedNode: undefined,
-                        item: parseInt(i),
-                        allowNoSelection: true,
-                    }, (response) => {
-                        if (response) {
-                            console.log(response.result); // 打印 content.js 的响应
-                        }
-                    });
+    for (let i = 0; i < protocolArray.length; i++) {
+        document.getElementById('orgProtocolItem' + i).addEventListener('click', () => {
+            api.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                const activeTab = tabs[0].id;
+                api.tabs.sendMessage(activeTab, {
+                    action: 'send_to_paw',
+                    selectedNode: undefined,
+                    item: i,
+                    allowNoSelection: true,
+                }, (response) => {
+                    if (response) console.log(response.result);
                 });
             });
-
-        }
+        });
     }
 });
 
-
+// ── DOMContentLoaded ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
-    let button = document.getElementById('toggleButton');
-    let autoHighlightButton = document.getElementById('autoHighlightButton');
-    let singleClickButton = document.getElementById('singleClickButton');
-    let showButtonButton = document.getElementById('showButtonButton');
-    let statusText = document.getElementById('statusText');
-    let autoHighlightStatusText = document.getElementById('autoHighlightStatusText');
-    let singleClickStatusText = document.getElementById('singleClickStatusText');
-    let showButtonStatusText = document.getElementById('showButtonStatusText');
-    // Set the initial state of the switch and status text
+
+    // ── Tab capture buttons ─────────────────────────────────────────────────
+    // "Capture Tab": save active tab then close it (OneTab behaviour)
+    document.getElementById('captureTab').addEventListener('click', () => {
+        api.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            const tab = tabs[0];
+            if (!tab) return;
+            api.runtime.sendMessage({
+                type: 'capture_tabs',
+                tabs: [{ url: tab.url, title: tab.title, favIconUrl: tab.favIconUrl || '' }],
+                tabIdsToClose: [tab.id]
+            });
+        });
+    });
+
+    // "Capture All": save all non-extension tabs, close them, open manager
+    document.getElementById('captureAllTabs').addEventListener('click', () => {
+        api.tabs.query({ currentWindow: true }, (tabs) => {
+            const toCapture = tabs.filter(t =>
+                t.url &&
+                !t.url.startsWith('chrome://') &&
+                !t.url.startsWith('chrome-extension://') &&
+                !t.url.startsWith('about:') &&
+                !t.url.startsWith('edge://')
+            );
+            if (toCapture.length === 0) return;
+            api.runtime.sendMessage({
+                type: 'capture_tabs',
+                tabs: toCapture.map(t => ({ url: t.url, title: t.title, favIconUrl: t.favIconUrl || '' })),
+                tabIdsToClose: toCapture.map(t => t.id)
+            });
+        });
+    });
+
+    document.getElementById('openSettings').addEventListener('click', () => {
+        api.runtime.openOptionsPage();
+    });
+
+    document.getElementById('openTabManager').addEventListener('click', () => {
+        api.tabs.create({ url: api.runtime.getURL('tabs.html') });
+    });
+
+    // ── Toggle switches ─────────────────────────────────────────────────────
+    const button = document.getElementById('toggleButton');
+    const autoHighlightButton = document.getElementById('autoHighlightButton');
+    const singleClickButton = document.getElementById('singleClickButton');
+    const showButtonButton = document.getElementById('showButtonButton');
+    const statusText = document.getElementById('statusText');
+    const autoHighlightStatusText = document.getElementById('autoHighlightStatusText');
+    const singleClickStatusText = document.getElementById('singleClickStatusText');
+    const showButtonStatusText = document.getElementById('showButtonStatusText');
+
     api.storage.sync.get('isExtensionDisabled', function(data) {
-        let isExtensionDisabled = data.isExtensionDisabled;
-        button.checked = !isExtensionDisabled;
-        statusText.textContent = isExtensionDisabled ? 'OFF' : 'ON';
+        button.checked = !data.isExtensionDisabled;
+        setBadge(statusText, !data.isExtensionDisabled);
     });
-
-    // Attach an event listener for when the switch is toggled
     button.addEventListener('change', function() {
-        let isExtensionDisabled = !button.checked; // Toggle the state
-        statusText.textContent = isExtensionDisabled ? 'OFF' : 'ON'; // Update status text
-        api.storage.sync.set({isExtensionDisabled: isExtensionDisabled});
+        const isExtensionDisabled = !button.checked;
+        setBadge(statusText, button.checked);
+        api.storage.sync.set({ isExtensionDisabled });
     });
 
-    // Set the initial state of the switch and status text
     api.storage.sync.get('isAutoHighlightDisabled', function(data) {
-        let isAutoHighlightDisabled = data.isAutoHighlightDisabled;
-        autoHighlightButton.checked = !isAutoHighlightDisabled;
-        autoHighlightStatusText.textContent = isAutoHighlightDisabled ? 'OFF' : 'ON';
+        autoHighlightButton.checked = !data.isAutoHighlightDisabled;
+        setBadge(autoHighlightStatusText, !data.isAutoHighlightDisabled);
     });
-
-    // Attach an event listener for when the switch is toggled
     autoHighlightButton.addEventListener('change', function() {
-        let isAutoHighlightDisabled = !autoHighlightButton.checked; // Toggle the state
-        autoHighlightStatusText.textContent = isAutoHighlightDisabled ? 'OFF' : 'ON'; // Update status text
-        api.storage.sync.set({isAutoHighlightDisabled: isAutoHighlightDisabled});
+        const isAutoHighlightDisabled = !autoHighlightButton.checked;
+        setBadge(autoHighlightStatusText, autoHighlightButton.checked);
+        api.storage.sync.set({ isAutoHighlightDisabled });
     });
 
     api.storage.sync.get('isSingleClickDisabled', function(data) {
-        let isSingleClickDisabled = data.isSingleClickDisabled;
-        singleClickButton.checked = !isSingleClickDisabled;
-        singleClickStatusText.textContent = isSingleClickDisabled ? 'OFF' : 'ON';
+        singleClickButton.checked = !data.isSingleClickDisabled;
+        setBadge(singleClickStatusText, !data.isSingleClickDisabled);
     });
-
-    // Attach an event listener for when the switch is toggled
     singleClickButton.addEventListener('change', function() {
-        let isSingleClickDisabled = !singleClickButton.checked; // Toggle the state
-        singleClickStatusText.textContent = singleClickButton ? 'OFF' : 'ON'; // Update status text
-        api.storage.sync.set({isSingleClickDisabled: isSingleClickDisabled});
+        const isSingleClickDisabled = !singleClickButton.checked;
+        setBadge(singleClickStatusText, singleClickButton.checked);
+        api.storage.sync.set({ isSingleClickDisabled });
     });
 
-    // Set the initial state of the show button switch and status text
     api.storage.sync.get('isShowButtonDisabled', function(data) {
-        let isShowButtonDisabled = data.isShowButtonDisabled;
-        showButtonButton.checked = !isShowButtonDisabled;
-        showButtonStatusText.textContent = isShowButtonDisabled ? 'OFF' : 'ON';
+        showButtonButton.checked = !data.isShowButtonDisabled;
+        setBadge(showButtonStatusText, !data.isShowButtonDisabled);
     });
-
-    // Attach an event listener for when the show button switch is toggled
     showButtonButton.addEventListener('change', function() {
-        let isShowButtonDisabled = !showButtonButton.checked; // Toggle the state
-        showButtonStatusText.textContent = isShowButtonDisabled ? 'OFF' : 'ON'; // Update status text
-        api.storage.sync.set({isShowButtonDisabled: isShowButtonDisabled});
+        const isShowButtonDisabled = !showButtonButton.checked;
+        setBadge(showButtonStatusText, showButtonButton.checked);
+        api.storage.sync.set({ isShowButtonDisabled });
     });
 });

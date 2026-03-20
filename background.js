@@ -46,6 +46,30 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             .catch(err => sendResponse({ error: err.message }));
         return true; // Keep the message channel open for async response
     }
+
+    if (message.type === 'capture_tabs') {
+        (async () => {
+            try {
+                const data = await api.storage.local.get({ pawTabSections: [] });
+                const sections = data.pawTabSections;
+                const now = new Date().toLocaleString();
+                sections.unshift({
+                    id: crypto.randomUUID(),
+                    name: now,
+                    tabs: message.tabs.map(t => ({ id: crypto.randomUUID(), ...t }))
+                });
+                await api.storage.local.set({ pawTabSections: sections });
+
+                if (message.tabIdsToClose && message.tabIdsToClose.length > 0) {
+                    await api.tabs.remove(message.tabIdsToClose).catch(() => {});
+                    api.tabs.create({ url: api.runtime.getURL('tabs.html') });
+                }
+            } catch (err) {
+                console.error('capture_tabs error:', err);
+            }
+        })();
+        return false;
+    }
 });
 
 api.runtime.onInstalled.addListener(() => {

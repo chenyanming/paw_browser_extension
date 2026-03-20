@@ -13,7 +13,8 @@
         "page": "options.html",
         "open_in_tab": true
     },
-    "permissions": ["storage", "activeTab", "http://localhost/*"],
+    "permissions": ["storage", "activeTab", "tabs", "http://localhost/*"],
+    "content_security_policy": "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: http: https:; connect-src 'self' http://localhost:*",
     "background": {
         "scripts": ["background.js"],
         "persistent": true

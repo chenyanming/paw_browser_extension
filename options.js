@@ -7,6 +7,51 @@
  * - Reflect `storage.sync` changes into the UI in real time
  */
 const api = (typeof browser !== 'undefined') ? browser : chrome;
+
+/** Set status badge text and green "on" class. */
+function setBadge(el, isEnabled) {
+  if (!el) return;
+  el.textContent = isEnabled ? 'ON' : 'OFF';
+  el.classList.toggle('on', isEnabled);
+}
+
+/**
+ * Convert any protocol string to a prettified JSON array.
+ * Handles comma-separated ("paw,anki") and existing JSON formats.
+ */
+function prettifyProtocol(text) {
+  try {
+    const parsed = JSON.parse(text);
+    return JSON.stringify(Array.isArray(parsed) ? parsed : [parsed], null, 2);
+  } catch (_) {
+    // Treat as comma-separated shorthand → convert to JSON array
+    const arr = (text || 'paw')
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean)
+      .map(p => ({ protocol: p }));
+    return JSON.stringify(arr, null, 2);
+  }
+}
+
+/** Validate textarea, show status, return parsed value or null. */
+function validateProtocolTextarea(textarea, statusEl) {
+  try {
+    const parsed = JSON.parse(textarea.value);
+    textarea.classList.remove('o-json-error');
+    textarea.classList.add('o-json-ok');
+    statusEl.textContent = '✓ valid JSON';
+    statusEl.className = 'o-json-status ok';
+    return parsed;
+  } catch (e) {
+    textarea.classList.remove('o-json-ok');
+    textarea.classList.add('o-json-error');
+    statusEl.textContent = '✗ ' + e.message;
+    statusEl.className = 'o-json-status error';
+    return null;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const toggleButton = document.getElementById('toggleButton');
   const statusText = document.getElementById('statusText');
@@ -49,19 +94,21 @@ document.addEventListener('DOMContentLoaded', function() {
     'server'
   ], function(data) {
     toggleButton.checked = !data.isExtensionDisabled;
-    statusText.textContent = data.isExtensionDisabled ? 'OFF' : 'ON';
+    setBadge(statusText, !data.isExtensionDisabled);
     singleClickButton.checked = !data.isSingleClickDisabled;
-    singleClickStatusText.textContent = data.isSingleClickDisabled ? 'OFF' : 'ON';
+    setBadge(singleClickStatusText, !data.isSingleClickDisabled);
     autoHighlightButton.checked = !data.isAutoHighlightDisabled;
-    autoHighlightStatusText.textContent = data.isAutoHighlightDisabled ? 'OFF' : 'ON';
+    setBadge(autoHighlightStatusText, !data.isAutoHighlightDisabled);
     showButtonButton.checked = !data.isShowButtonDisabled;
-    showButtonStatusText.textContent = data.isShowButtonDisabled ? 'OFF' : 'ON';
+    setBadge(showButtonStatusText, !data.isShowButtonDisabled);
     keySelection.value = data.shortcutKey || 's';
     modifierSelection.value = data.modifierKey || 'Alt';
     floatingButtonLeftSelection.value = data.floatingButtonLeft || '10';
     floatingButtonTopSelection.value = data.floatingButtonTop || '-10';
-    // Load new settings
-    protocolInput.value = data.protocol || 'paw';
+    // Load new settings — prettify protocol into the textarea
+    const rawProtocol = data.protocol || 'paw';
+    protocolInput.value = prettifyProtocol(rawProtocol);
+    validateProtocolTextarea(protocolInput, document.getElementById('protocol-error'));
     templateInput.value = data.template || '';
     urlInput.value = data.url || 'url';
     titleInput.value = data.title || 'title';
@@ -72,28 +119,33 @@ document.addEventListener('DOMContentLoaded', function() {
   // Toggle extension state
   toggleButton.addEventListener('change', function() {
     const isExtensionDisabled = !toggleButton.checked;
-    statusText.textContent = isExtensionDisabled ? 'OFF' : 'ON';
+    setBadge(statusText, toggleButton.checked);
     api.storage.sync.set({ isExtensionDisabled: isExtensionDisabled });
   });
   // Toggle single click state
   singleClickButton.addEventListener('change', function() {
     const isSingleClickDisabled = !singleClickButton.checked;
-    singleClickStatusText.textContent = isSingleClickDisabled ? 'OFF' : 'ON';
+    setBadge(singleClickStatusText, singleClickButton.checked);
     api.storage.sync.set({ isSingleClickDisabled: isSingleClickDisabled });
   });
   // Toggle auto highlight state
   autoHighlightButton.addEventListener('change', function() {
     const isAutoHighlightDisabled = !autoHighlightButton.checked;
-    autoHighlightStatusText.textContent = isAutoHighlightDisabled ? 'OFF' : 'ON';
+    setBadge(autoHighlightStatusText, autoHighlightButton.checked);
     api.storage.sync.set({ isAutoHighlightDisabled: isAutoHighlightDisabled });
   });
 
   // Toggle show button state
   showButtonButton.addEventListener('change', function() {
     const isShowButtonDisabled = !showButtonButton.checked;
-    showButtonStatusText.textContent = isShowButtonDisabled ? 'OFF' : 'ON';
+    setBadge(showButtonStatusText, showButtonButton.checked);
     api.storage.sync.set({ isShowButtonDisabled: isShowButtonDisabled });
   });
+  // Live JSON validation for protocol textarea
+  protocolInput.addEventListener('input', () => {
+    validateProtocolTextarea(protocolInput, document.getElementById('protocol-error'));
+  });
+
   // Save key selection and settings
   saveKeyButton.addEventListener('click', function() {
     // shortcut key setting
@@ -108,8 +160,11 @@ document.addEventListener('DOMContentLoaded', function() {
     api.storage.sync.set({ floatingButtonLeft: floatingButtonLeft, floatingButtonTop: floatingButtonTop }, function() {
       console.log('Floating button offset saved:', floatingButtonLeft, floatingButtonTop);
     });
-    // Save new settings
-    const protocol = protocolInput.value;
+    // Save protocol — compact JSON; abort save if invalid
+    const protocolStatusEl = document.getElementById('protocol-error');
+    const parsedProtocol = validateProtocolTextarea(protocolInput, protocolStatusEl);
+    if (parsedProtocol === null) return; // don't save if JSON is broken
+    const protocol = JSON.stringify(parsedProtocol); // compact for storage
     const template = templateInput.value;
     const url = urlInput.value;
     const title = titleInput.value;

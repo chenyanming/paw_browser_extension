@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PAW Tab Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tabs.css">
+</head>
+<body>
+
+  <header class="t-header" role="banner">
+    <div class="t-header-left">
+      <img src="images/icon48.png" class="t-logo" alt="PAW logo" width="30" height="30">
+      <div class="t-titles">
+        <span class="t-wordmark">PAW</span>
+        <span class="t-subtitle">Tab Manager</span>
+      </div>
+      <div class="t-count-badge" id="totalCount" aria-live="polite" aria-atomic="true"></div>
+    </div>
+    <div class="t-header-right">
+      <label class="t-proto-label" for="protocolSelect">Protocol</label>
+      <select id="protocolSelect" class="t-select" aria-label="Select protocol for sending to Emacs"></select>
+      <button id="sendSelected" class="t-btn t-btn-primary" type="button"
+              aria-label="Send all selected tabs to Emacs">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 8h10M9 5l4 3-4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Send Selected
+      </button>
+      <button id="clearAll" class="t-btn t-btn-ghost-danger" type="button"
+              aria-label="Clear all captured tab sections">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3 4h10M6 4V3h4v1M5 4l.5 8h5l.5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Clear All
+      </button>
+    </div>
+  </header>
+
+  <main id="sections" role="main" aria-label="Captured tab sections" aria-live="polite">
+    <!-- Rendered by tabs.js -->
+  </main>
+
+  <script src="tabs.js"></script>
+</body>
+</html>

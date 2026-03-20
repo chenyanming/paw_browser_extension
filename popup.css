@@ -1,57 +1,346 @@
 :root {
-  --switch-width: 40px;
-  --switch-height: 20px;
+  --p-bg: #ffffff;
+  --p-surface: #f8fafc;
+  --p-surface-hover: #f1f5f9;
+  --p-border: #e2e8f0;
+  --p-text: #0f172a;
+  --p-text-muted: #64748b;
+  --p-accent: #3b82f6;
+  --p-on: #16a34a;
+  --p-off: #cbd5e1;
+  --p-radius: 5px;
+  --p-radius-full: 999px;
+  --p-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --p-font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+  --p-mono: 'SF Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
 }
-.wrapper {
-    display: flex;         /* Sets the layout to Flexbox */
-    align-items: center;   /* Vertically aligns all items in the center */
-}
-.switch {
-  margin-right: 10px;    /* Adds some space between the switch and the text */
 
-  position: relative;
-  display: inline-block;
-  width: var(--switch-width);
-  height: var(--switch-height);
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
-#statusText {
-    display: inline-block;
-    vertical-align: middle;
+
+body {
+  font-family: var(--p-font);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--p-text);
+  background: var(--p-bg);
+  width: 256px;
+  -webkit-font-smoothing: antialiased;
 }
-.slider {
-  position: absolute;
+
+/* ── Header ─────────────────────────────────── */
+.p-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 13px 8px;
+  background: #0f172a;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.p-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.p-settings-btn {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 5px;
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
-  height: var(--switch-height);
+  color: rgba(255,255,255,0.5);
+  flex-shrink: 0;
+  transition: all 100ms var(--p-ease);
+  padding: 0;
 }
-.slider:before {
+
+.p-settings-btn svg { width: 13px; height: 13px; }
+
+.p-settings-btn:hover {
+  color: white;
+  border-color: rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.08);
+}
+
+.p-settings-btn:focus-visible {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 2px;
+}
+  padding: 9px 13px 8px;
+  background: #0f172a;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.p-logo {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+
+.p-wordmark {
+  font-family: var(--p-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.p-tagline {
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  margin-left: auto;
+  font-style: italic;
+}
+
+/* ── Toggle Rows ─────────────────────────────── */
+.p-toggles {
+  padding: 3px 0;
+  border-bottom: 1px solid var(--p-border);
+}
+
+.p-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 13px;
+  transition: background 100ms var(--p-ease);
+}
+
+.p-row:hover {
+  background: var(--p-surface);
+}
+
+.p-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--p-text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.p-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.p-badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--p-text-muted);
+  min-width: 22px;
+  text-align: right;
+  transition: color 150ms var(--p-ease);
+}
+
+.p-badge.on {
+  color: var(--p-on);
+}
+
+/* Toggle switch */
+.p-switch {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.p-switch input {
   position: absolute;
-  height: calc(var(--switch-height) - 4px); /* 4px less to create a gap */
-  width: calc(var(--switch-height) - 4px); /* keep it a circle */
-  left: 2px; /* half of the gap */
-  bottom: 2px; /* half of the gap */
-  background-color: white;
-  content: "";
-  -webkit-transition: .4s;
-  transition: .4s;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
 }
-input:checked + .slider {
-  background-color: #2196F3;
+
+.p-switch input:focus-visible + .p-track {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 2px;
 }
-input:checked + .slider:before {
-  -webkit-transform: translateX(calc(var(--switch-width) - var(--switch-height)));
-  -ms-transform: translateX(calc(var(--switch-width) - var(--switch-height)));
-  transform: translateX(calc(var(--switch-width) - var(--switch-height)));
+
+.p-track {
+  position: relative;
+  width: 32px;
+  height: 17px;
+  background: var(--p-off);
+  border-radius: var(--p-radius-full);
+  transition: background 150ms var(--p-ease);
+  display: block;
+  flex-shrink: 0;
 }
-.slider.round {
-  border-radius: var(--switch-height);
-}
-.slider.round:before {
+
+.p-track::after {
+  content: '';
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  background: white;
   border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 150ms var(--p-ease);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.p-switch input:checked + .p-track {
+  background: var(--p-on);
+}
+
+.p-switch input:checked + .p-track::after {
+  transform: translateX(15px);
+}
+
+/* ── Protocol Section ────────────────────────── */
+.p-protocol {
+  padding: 7px 13px 9px;
+  border-bottom: 1px solid var(--p-border);
+}
+
+.p-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--p-text-muted);
+  margin-bottom: 5px;
+}
+
+.p-protocol-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 18px;
+}
+
+/* Protocol buttons added dynamically */
+.p-protocol-list button,
+.protocol-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: transparent;
+  border: 1px solid var(--p-border);
+  border-radius: var(--p-radius-full);
+  font-size: 11px;
+  font-family: var(--p-mono);
+  font-weight: 500;
+  color: var(--p-text);
+  cursor: pointer;
+  transition: all 100ms var(--p-ease);
+}
+
+.p-protocol-list button:hover,
+.protocol-item:hover {
+  background: var(--p-accent);
+  border-color: var(--p-accent);
+  color: white;
+}
+
+.p-protocol-list button:focus-visible,
+.protocol-item:focus-visible {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 2px;
+}
+
+/* ── Capture Section ─────────────────────────── */
+.p-capture {
+  padding: 7px 13px 11px;
+}
+
+.p-icon {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.p-capture-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.p-capture-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 6px;
+  background: var(--p-surface);
+  border: 1px solid var(--p-border);
+  border-radius: var(--p-radius);
+  font-size: 11px;
+  font-family: var(--p-font);
+  font-weight: 500;
+  color: var(--p-text);
+  cursor: pointer;
+  transition: all 100ms var(--p-ease);
+  white-space: nowrap;
+}
+
+.p-capture-btn:hover {
+  background: var(--p-accent);
+  border-color: var(--p-accent);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(59,130,246,0.3);
+}
+
+.p-capture-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.p-capture-btn:focus-visible {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 2px;
+}
+
+.p-manager-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 7px 12px;
+  background: #0f172a;
+  border: none;
+  border-radius: var(--p-radius);
+  font-size: 11px;
+  font-family: var(--p-font);
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 100ms var(--p-ease);
+  letter-spacing: 0.01em;
+}
+
+.p-manager-btn:hover {
+  background: var(--p-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+}
+
+.p-manager-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.p-manager-btn:focus-visible {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 2px;
 }

@@ -1,6 +1,6 @@
 #+title: paw - Emacs org-protocol companion extension
 
-Paw is a Chrome/Firefox extension for sending page context (url, title, selected body, surrounding note) to Emacs via org-protocol, with optional server-side features. It adds a floating action button, keyboard shortcut, single-click word capture, and auto-highlighting powered by a local server.
+Paw is a Chrome/Firefox extension for sending page context (url, title, selected body, surrounding note) to Emacs via org-protocol, with optional server-side features. It adds a floating action button, keyboard shortcut, single-click word capture, auto-highlighting powered by a local server, and a OneTab-style tab manager.
 
 * Store Listings
 1. Firefox & Firefox Android [[https://addons.mozilla.org/en-US/firefox/addon/emacs-paw][addons.mozilla.org/en-US/firefox/addon/emacs-paw]]
@@ -13,67 +13,56 @@ Paw is a Chrome/Firefox extension for sending page context (url, title, selected
 - Single-click mode: wrap words and send selection on click
 - Auto-highlight words returned by paw-server with info bubble
 - Optional site bridges (e.g., Netflix) to expose playback controls
-
-* Plan and Roadmap
-** Current (original) features
-- Floating action button with submenu and context menu based on ~Protocol(s)~
-- Keyboard shortcut (default Alt + s) to capture word under caret
-- Single-click mode to wrap words and send selection to Emacs/paw-server
-- Auto-highlight from ~GET /words~ with info bubble (check, delete, view)
-- Org-protocol integration with support for ~text~, ~html~, and optional ~markdown~ formats
-- Fallback to org-protocol if ~POST /paw~ fails
-- Save full page HTML via ~POST /source~ and optional Wallabag save
-- Options page for toggles, shortcuts, offsets, Protocol(s), and server
-- Popup toggles for Enable, Single-Click, Auto-Highlight, Show Button and quick protocol actions
-- Netflix page bridge exposing play/pause/seek via injected script
-
+- *OneTab-style tab manager*: capture, organise, and send tabs to Emacs
+- *Multi-format link copy*: org-mode, Markdown, or plain URL
 
 * Installation (from source)
-1. Clone this repo or copy the `paw` directory
+1. Clone this repo or copy the ~paw~ directory
 2. Chrome-based: ~chrome://extensions~ → Enable Developer Mode → Load unpacked → select this folder
 3. Firefox: ~about:debugging#/runtime/this-firefox~ → Load Temporary Add-on → select ~manifest-v2.json~ (Firefox uses MV2 format)
 
 Artifacts for distribution are in ~web-ext-artifacts/~.
 
 * Configuration
-Open the extension Options page. Stored keys (in ~storage.sync~):
+Open the extension Options page (click the ⚙ gear icon in the popup). Stored keys (in ~storage.sync~):
 - ~isExtensionDisabled~, ~isSingleClickDisabled~, ~isAutoHighlightDisabled~, ~isShowButtonDisabled~
-- ~shortcutKey~, ~modifierKey~ ("None" | "Ctrl" | "Alt")
+- ~shortcutKey~, ~modifierKey~ (\"None\" | \"Ctrl\" | \"Alt\")
 - ~floatingButtonLeft~, ~floatingButtonTop~ (pixel offsets)
 - ~protocol~, ~template~, ~url~, ~title~, ~note~, ~body~
 - ~server~ (default ~http://localhost:5001~)
 
+Captured tab sections are stored in ~storage.local~ under the key ~pawTabSections~.
+
 ** Protocol(s)
-Two formats are supported for ~Protocol(s)~:
+Two formats are supported. The Options page displays and validates the value as prettified JSON.
 
 *** JSON Array (recommended; supported >= 1.0.18)
 #+begin_src js
 [
-  { "protocol": "paw", "format": "text" },
-  { "protocol": "eaf-browser", "format": "text" },
+  { "protocol": "paw",          "format": "text" },
+  { "protocol": "eaf-browser",  "format": "text" },
   { "protocol": "capture-html", "format": "html", "deselect": true },
-  { "protocol": "wallabag", "format": "text", "download": true }
+  { "protocol": "wallabag",     "format": "text", "download": true }
 ]
 #+end_src
 
 Supported keys:
-| key       | type                 | description                                                   |
-|-----------+----------------------+---------------------------------------------------------------|
-| protocol  | string               | Emacs org-protocol name                                      |
-| format    | "text" or "html"    | Body format; ~markdown~ is also supported in content script  |
-| download  | boolean              | If ~t~, upload page HTML to paw-server and include file path |
-| deselect  | boolean              | If ~t~, clear selection after triggering                      |
+| key       | type              | description                                                   |
+|-----------+-------------------+---------------------------------------------------------------|
+| protocol  | string            | Emacs org-protocol name                                       |
+| format    | "text" or "html"  | Body format; ~markdown~ is also supported in content script   |
+| download  | boolean           | If ~t~, upload page HTML to paw-server and include file path  |
+| deselect  | boolean           | If ~t~, clear selection after triggering                      |
 
 *** Comma-separated text (legacy)
 #+begin_src text
 paw,eaf-browser
 #+end_src
-
 Body defaults to ~text~.
 
 ** Example: org-protocol to open current url in EAF
 #+begin_src emacs-lisp
-(add-to-list 'org-protocol-protocol-alist 
+(add-to-list 'org-protocol-protocol-alist
              '("Eaf Browser"
                :protocol "eaf-browser"
                :function org-protocol-eaf-browse
@@ -85,11 +74,71 @@ Body defaults to ~text~.
   nil)
 #+end_src
 
+** Example: org-protocol to open url in a specific browser
+#+begin_src emacs-lisp
+(defun my--open-in-browser (url browser-mac browser-linux)
+  (cond
+   ((eq system-type 'darwin)
+    (call-process "open" nil 0 nil "-a" browser-mac url))
+   ((eq system-type 'gnu/linux)
+    (call-process browser-linux nil 0 nil url))
+   (t (browse-url url))))
+
+;; Register protocols: open-firefox, open-brave, open-chrome
+(dolist (entry '(("Open Firefox" "open-firefox" "Firefox"      "firefox")
+                 ("Open Brave"   "open-brave"   "Brave Browser" "brave-browser")
+                 ("Open Chrome"  "open-chrome"  "Google Chrome" "google-chrome")))
+  (add-to-list 'org-protocol-protocol-alist
+               `(,(nth 0 entry)
+                 :protocol ,(nth 1 entry)
+                 :function (lambda (arg)
+                             (my--open-in-browser
+                              (plist-get arg :url) ,(nth 2 entry) ,(nth 3 entry))
+                             nil)
+                 :kill-client t)))
+#+end_src
+
+Bookmarklet pattern:
+#+begin_src js
+javascript:location.href='org-protocol://open-firefox?url='+encodeURIComponent(location.href);
+#+end_src
+
+* Tab Manager
+The tab manager (~tabs.html~) is a full-page OneTab-style interface for captured tabs.
+
+** Capturing tabs
+From the popup:
+- *Capture Tab* — saves the active tab, closes it, and opens the tab manager
+- *Capture All* — saves all non-extension tabs in the window, closes them, and opens the manager
+- *Manage Tabs* — opens the tab manager without capturing
+
+** Tab Manager features
+- Sections (groups) with editable names (click to rename; Enter or Escape to confirm/cancel)
+- Drag-and-drop reordering of tabs *within and across* sections
+- Drag-and-drop reordering of *sections* themselves (grip handle on the left)
+- Checkbox multi-select per tab or per entire section
+- *Send →Emacs* per tab, per section (Send All), or in bulk (Send Selected) via paw-server POST
+- *Copy URLs* — floating format menu per tab or per section:
+  - Org-mode: ~[[url][title]]~
+  - Markdown: ~[title](url)~
+  - Plain URL
+- *Open All* — reopens all tabs in a section
+- Protocol selector in the header (reads ~Protocol(s)~ from settings)
+- Live update when background captures new tabs
+- Clear All with confirmation
+
+* Popup
+The popup (toolbar icon) provides:
+- *Enable / Single-Click / Auto-Highlight / Show Button* toggles
+- Quick *Send to* protocol buttons (from ~Protocol(s)~ setting)
+- *Capture Tab*, *Capture All*, *Manage Tabs* buttons
+- *⚙ Settings* button (top-right) — opens the Options page
+
 * paw-server (optional)
 The Python CLI [[https://pypi.org/project/emacs-paw/][emacs-paw]] provides a small backend (Flask) for advanced flows:
-- POST ~/paw~: receive selection payload from the extension
-- GET ~/words~: serve highlight word list
-- POST ~/source~: receive and persist current page HTML
+- ~POST /paw~: receive selection payload from the extension
+- ~GET /words~: serve highlight word list
+- ~POST /source~: receive and persist current page HTML
 
 1. Install: ~pip install emacs-paw~
 2. Run server:
@@ -103,37 +152,55 @@ The Python CLI [[https://pypi.org/project/emacs-paw/][emacs-paw]] provides a sma
      (let* ((url (org-protocol-sanitize-uri (or (plist-get data :url) ""))))
        (message "URL: %s" url)
        (when (file-exists-p "/tmp/paw_server_html_file.html")
-         ;; process the HTML file here
          (delete-file "/tmp/paw_server_html_file.html"))
        nil))
    #+end_src
 
 * Usage
-- Press the toolbar icon to open popup toggles
-- Use the Options page to configure Protocol(s), server, shortcuts, offsets
-- Select text on a page; use the floating "+" to trigger actions
-- Use shortcut (e.g., Alt + s) to grab word under caret and send
-- Enable Auto-Highlight to see known words and hover the bubble for details
-- Toggle "Show Button" to hide floating button by default; it will still appear when text is selected
+- Press the toolbar icon to open popup toggles and capture buttons
+- Click ⚙ in the popup to open the Options page
+- Select text on a page; use the floating "+" to trigger actions from the submenu
+- Use the keyboard shortcut (default Alt + s) to grab the word under the caret and send
+- Enable Auto-Highlight to see known words; hover the bubble for check/delete/view
+- Toggle "Show Button" to hide the floating button by default (it still appears on selection)
+- Use *Capture Tab* or *Capture All* to save tabs to the manager; reopen them any time from *Manage Tabs*
 
 * Permissions
-- ~storage~, ~activeTab~
+- ~storage~, ~activeTab~, ~tabs~
 - ~host_permissions~: ~http://localhost/*~ (only for paw-server features)
+- Firefox MV2: ~content_security_policy~ allows Google Fonts (DM Sans/Mono) and localhost fetch
 
 * Privacy
 - No data is sent anywhere unless you enable paw-server or trigger org-protocol
-- When ~server~ is set, requests go to your configured local server
+- When ~server~ is set, requests go to your configured local server only
 - No usage analytics or third-party telemetry
 
 * Development
 - Manifests: ~manifest.json~ (Chrome MV3), ~manifest-v2.json~ (Firefox MV2), ~manifest-v3.json~ (legacy)
 - Background: ~background.js~ (service worker on Chrome MV3, persistent script on Firefox MV2)
 - Content: ~content.js~ (UI, capture, highlight, server/org-protocol integration)
-- Popup UI: ~popup.html~, ~popup.js~
-- Options UI: ~options.html~, ~options.js~
+- Popup UI: ~popup.html~, ~popup.js~, ~popup.css~
+- Tab Manager: ~tabs.html~, ~tabs.js~, ~tabs.css~
+- Options UI: ~options.html~, ~options.js~, ~options.css~
+- Content styles: ~content_scripts.css~ (floating button, submenu, highlight bubble)
 - Bridges: ~netflix-bridge.js~
 
 To package for both browsers, use ~./package.sh~ or ~npm run package~; artifacts end up in ~web-ext-artifacts/~.
+
+* Plan and Roadmap
+** Implemented features
+- Floating action button with submenu and context menu based on ~Protocol(s)~
+- Keyboard shortcut (default Alt + s) to capture word under caret
+- Single-click mode to wrap words and send selection to Emacs/paw-server
+- Auto-highlight from ~GET /words~ with info bubble (check, delete, view)
+- Org-protocol integration with support for ~text~, ~html~, and optional ~markdown~ formats
+- Fallback to org-protocol if ~POST /paw~ fails
+- Save full page HTML via ~POST /source~ and optional Wallabag save
+- Options page: toggles, shortcuts, offsets, Protocol(s) JSON editor (with live validation), server
+- Popup: toggles, protocol buttons, tab capture/manager, settings shortcut
+- OneTab-style tab manager with drag-and-drop, multi-select, send-to-Emacs, multi-format copy
+- Netflix page bridge exposing play/pause/seek via injected script
+- Firefox MV2 and Chrome MV3 support
 
 * Supported Emacs Packages
 - [[https://github.com/chenyanming/paw][paw.el]]: Send word to Emacs and show on paw-view-note

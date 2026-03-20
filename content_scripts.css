@@ -19,146 +19,158 @@
     z-index: 1000000;
     font-family: 'Arial', sans-serif;
 }
-.xqdd_bubble.show {
-    display: block;
-}
-.xqdd_bubble_word {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    word-break: break-word;
-    margin-bottom: 5px;
-    font-size: 16px;
-}
-.xqdd_bubble_word span {
-    font-weight: bold;
-    font-size: 20px;
-    margin-bottom: 5px;
-}
-.xqdd_bubble_exp {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 8px;
-    color: #333;
-    font-style: italic;
-    font-size: 14px;
-}
-.xqdd_bubble_origin_path {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 8px;
-    color: #777;
-    font-size: 14px;
-}
-.xqdd_bubble_note {
-    display: flex;
-    align-items: flex-start;
-    color: #555;
-    font-size: 14px;
-}
-/* Adding hover effect */
-.word:hover .xqdd_bubble {
-    display: flex;
-}
+.xqdd_bubble.show   { display: block; }
+.xqdd_bubble_word   { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; word-break: break-word; margin-bottom: 5px; font-size: 16px; }
+.xqdd_bubble_word span { font-weight: bold; font-size: 20px; margin-bottom: 5px; }
+.xqdd_bubble_exp    { display: flex; align-items: flex-start; margin-bottom: 8px; color: #333; font-style: italic; font-size: 14px; }
+.xqdd_bubble_origin_path { display: flex; align-items: flex-start; margin-bottom: 8px; color: #777; font-size: 14px; }
+.xqdd_bubble_note   { display: flex; align-items: flex-start; color: #555; font-size: 14px; }
+.word:hover .xqdd_bubble { display: flex; }
+.xqdd_bubble_delete { position: absolute; color: rgba(255,255,255,0.6); right: 2px; top: 0; cursor: pointer; }
+.xqdd_bubble_delete:hover { background-color: #e81123; color: white; }
+.xqdd_bubble_check  { position: absolute; color: rgba(255,255,255,0.6); right: 30px; top: 0; cursor: pointer; }
+.xqdd_bubble_check:hover { color: #4CAF50; }
+.click-underline    { text-decoration: underline !important; }
 
-.xqdd_bubble_delete {
-    position: absolute;
-    color: rgba(255, 255, 255, 0.6);
-    right: 2px;
-    top: 0;
-    cursor: pointer;
-}
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PAW UI  —  tokens match popup.css / tabs.css exactly
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-.xqdd_bubble_delete:hover {
-    background-color: #e81123;
-    color: white;
-}
-/* Add check button styles */
-.xqdd_bubble_check {
-    position: absolute;
-    color: rgba(255, 255, 255, 0.6);
-    right: 30px; /* Position the check button 30px from the right */
-    top: 0;
-    cursor: pointer;
-}
-
-.xqdd_bubble_check:hover {
-    color: #4CAF50; /* Change color on hover */
-}
-.click-underline {
-    text-decoration: underline !important;
-}
+/* ── Floating "+" button ─────────────────────────────────────────────────── */
 #floatingButton {
+    /* layout */
     position: fixed;
     bottom: 15px;
     right: 10px;
-    width: 20px; /* Scaled width */
-    height: 20px; /* Scaled height */
-    background-color: #008CBA;
-    color: white;
-    border: none;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
-    cursor: pointer;
-    font-size: 10px; /* Scaled font size */
-    z-index: 1000;
-    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.1); /* Scaled box-shadow */
-    user-select: none; /* Prevent text selection while dragging */
-    transform: scale(1.5); /* Scaling */
-}
-#floatingButton:hover {
-    background-color: #005f73;
-}
-#submenu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    overflow: hidden;
     position: fixed;
-    background-color: white;
-    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.1); /* Scaled box-shadow */
-    border-radius: 5px;
-    padding: 5px; /* Scaled padding */
-    z-index: 1000;
-    display: none; /* Initially hidden */
-    transform: scale(1.5); /* Scaling */
-}
-.submenu-item {
-    display: block;
-    padding: 3px; /* Scaled padding */
-    margin: 2px 0; /* Scaled margins */
-    background-color: #008CBA;
-    color: white;
+
+    /* appearance — same dark as popup header */
+    background: #0f172a;
+    color: transparent;          /* hide the raw "+" text */
     border: none;
-    border-radius: 4px;
+    font-size: 0;                /* belt-and-suspenders: zero out font metrics */
+
+    /* interaction */
     cursor: pointer;
-    text-align: left;
-    width: auto;
-    font-size: 10px; /* Scaled font size */
-}
-.submenu-item:hover {
-    background-color: #005f73;
+    user-select: none;
+    z-index: 2147483646;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.12);
+    transition: background  100ms cubic-bezier(0.4,0,0.2,1),
+                box-shadow  100ms cubic-bezier(0.4,0,0.2,1),
+                transform   100ms cubic-bezier(0.4,0,0.2,1);
 }
 
-#contextMenu {
-    position: fixed;
-    background-color: white;
-    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.1); /* Scaled box-shadow */
-    border-radius: 5px;
-    padding: 5px; /* Scaled padding */
-    z-index: 1000;
-    display: none; /* Initially hidden */
-    transform: scale(1.5); /* Scaling */
+/* Draw the "+" as two perfectly centred rectangles */
+#floatingButton::before,
+#floatingButton::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background: #ffffff;
+    border-radius: 1px;
+    transform: translate(-50%, -50%);
 }
+#floatingButton::before { width: 10px; height: 1.5px; } /* horizontal bar */
+#floatingButton::after  { width: 1.5px; height: 10px; } /* vertical bar   */
+
+#floatingButton:hover {
+    background: #3b82f6;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.4), 0 1px 3px rgba(0,0,0,0.10);
+    transform: scale(1.08);
+}
+
+/* ── Dropdown menus ──────────────────────────────────────────────────────── */
+#submenu,
+#contextMenu {
+    /* layout */
+    position: fixed;
+    padding: 4px;
+    width: max-content;
+    max-width: min(220px, calc(100vw - 20px));
+    box-sizing: border-box;
+
+    /* appearance */
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    /* deep shadow stack so the menu always pops above page content */
+    box-shadow:
+        0 0   0  1px  rgba(0,0,0,0.06),
+        0 2px  4px     rgba(0,0,0,0.12),
+        0 8px 20px     rgba(0,0,0,0.16),
+        0 20px 40px    rgba(0,0,0,0.10);
+
+    /* typography — bumped to 13 px for legibility over page content */
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #0f172a;
+
+    display: none;
+    z-index: 2147483647;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+/* ── Menu item base ──────────────────────────────────────────────────────── */
+.submenu-item,
 .protocol-item {
-    display: inline-block;
-    padding: 3px; /* Scaled padding */
-    margin: 2px 0; /* Scaled margins */
-    background-color: #008CBA;
-    color: white;
+    display: block;
+    width: 100%;
+    padding: 6px 11px;
+    margin: 0;
+    box-sizing: border-box;
+
+    background: transparent;
     border: none;
     border-radius: 4px;
-    cursor: pointer;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: #0f172a;
     text-align: left;
-    width: auto;
-    font-size: 10px; /* Scaled font size */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+    transition: background 100ms cubic-bezier(0.4,0,0.2,1),
+                color      100ms cubic-bezier(0.4,0,0.2,1);
 }
+
+.submenu-item:hover,
 .protocol-item:hover {
-    background-color: #005f73;
+    background: #3b82f6;
+    color: #ffffff;
+}
+
+.submenu-item:focus-visible,
+.protocol-item:focus-visible {
+    box-shadow: inset 0 0 0 2px #3b82f6;
+}
+
+/* ── Protocol items — monospace only, same color as actions ─────────────── */
+.protocol-item {
+    font-family: 'SF Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size: 12px;
+}
+
+/* ── Divider before first protocol item in submenu ──────────────────────── */
+#submenuItem0 {
+    border-top: 1px solid #e2e8f0;
+    margin-top: 3px;
+    padding-top: 8px;
 }

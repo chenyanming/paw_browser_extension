@@ -1,6 +1,6 @@
 #+title: paw - Emacs org-protocol companion extension
 
-Paw is a Chrome/Firefox extension for sending page context (url, title, selected body, surrounding note) to Emacs via org-protocol, with optional server-side features. It adds a floating action button, keyboard shortcut, single-click word capture, auto-highlighting powered by a local server, and a OneTab-style tab manager.
+Paw is a Chrome/Firefox extension for sending page context (url, title, selected body, surrounding note) to Emacs via org-protocol, with optional server-side features. It adds a floating action button, keyboard shortcut, single-click word capture, auto-highlighting powered by a local server, and a tab manager.
 
 * Store Listings
 1. Firefox & Firefox Android [[https://addons.mozilla.org/en-US/firefox/addon/emacs-paw][addons.mozilla.org/en-US/firefox/addon/emacs-paw]]
@@ -13,7 +13,7 @@ Paw is a Chrome/Firefox extension for sending page context (url, title, selected
 - Single-click mode: wrap words and send selection on click
 - Auto-highlight words returned by paw-server with info bubble
 - Optional site bridges (e.g., Netflix) to expose playback controls
-- *OneTab-style tab manager*: capture, organise, and send tabs to Emacs
+- *Tab manager*: capture, organise, and send tabs to Emacs
 - *Multi-format link copy*: org-mode, Markdown, or plain URL
 
 * Installation (from source)
@@ -104,7 +104,7 @@ javascript:location.href='org-protocol://open-firefox?url='+encodeURIComponent(l
 #+end_src
 
 * Tab Manager
-The tab manager (~tabs.html~) is a full-page OneTab-style interface for captured tabs.
+The tab manager (~tabs.html~) is a full-page interface for capturing and managing tabs.
 
 ** Capturing tabs
 From the popup:
@@ -198,7 +198,7 @@ To package for both browsers, use ~./package.sh~ or ~npm run package~; artifacts
 - Save full page HTML via ~POST /source~ and optional Wallabag save
 - Options page: toggles, shortcuts, offsets, Protocol(s) JSON editor (with live validation), server
 - Popup: toggles, protocol buttons, tab capture/manager, settings shortcut
-- OneTab-style tab manager with drag-and-drop, multi-select, send-to-Emacs, multi-format copy
+- Tab manager with drag-and-drop, multi-select, send-to-Emacs, multi-format copy
 - Netflix page bridge exposing play/pause/seek via injected script
 - Firefox MV2 and Chrome MV3 support
 

@@ -85,12 +85,6 @@ PRIVACY
 ✅ Open source — inspect the code yourself
 
 
-SUPPORTED PLATFORMS
-
-- Chrome, Chromium, Brave, Edge (Manifest V3)
-- Firefox Desktop & Android (Manifest V2)
-
-
 EMACS PACKAGE INTEGRATION
 
 - paw.el — Word and note management

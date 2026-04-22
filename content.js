@@ -310,6 +310,18 @@ function openFloatingButton () {
     floatingButton.style.display = "block";
 }
 
+/** Hide floating action menus without changing the button visibility. */
+function closeFloatingMenus() {
+    const submenu = document.getElementById("submenu");
+    const contextMenu = document.getElementById("contextMenu");
+    if (submenu) {
+        submenu.style.display = "none";
+    }
+    if (contextMenu) {
+        contextMenu.style.display = "none";
+    }
+}
+
 /**
  * Capture selected HTML fragment with absolute URLs for anchors/images.
  * @returns {string}
@@ -992,6 +1004,7 @@ function createButton() {
                         // alert('floatingButton clicked');
 
                         // console.log("Button Click");
+                        closeFloatingMenus();
                         send_to_paw(undefined, parseInt(i)+1);
                     });
 
@@ -1010,6 +1023,7 @@ function createButton() {
                         // alert('floatingButton clicked');
 
                         // console.log("Button Click");
+                        closeFloatingMenus();
                         send_to_paw(undefined, parseInt(i), true);
                     });
 
@@ -1018,12 +1032,14 @@ function createButton() {
                 document.getElementById("pawEnableItem").addEventListener("click", () => {
                     // Custom code for item 1
                     // alert('Item 1 clicked');
+                    closeFloatingMenus();
                     toggleSingleClick();
                 });
                 // Add click event listeners for submenu items
                 document.getElementById("pawSendHtml").addEventListener("click", () => {
                     // Custom code for item 1
                     // alert('Item 1 clicked');
+                    closeFloatingMenus();
                     save_to_wallabag();
                 });
 
@@ -1031,6 +1047,7 @@ function createButton() {
                 document.getElementById("pawHighlight").addEventListener("click", () => {
                     // Custom code for item 1
                     // alert('Item 1 clicked');
+                    closeFloatingMenus();
                     toggleHighlight();
                 });
 
@@ -1197,6 +1214,7 @@ function createButton() {
         // alert('floatingButton clicked');
 
         // console.log("Button Click");
+        closeFloatingMenus();
         send_to_paw();
 
     });

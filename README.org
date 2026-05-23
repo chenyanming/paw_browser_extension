@@ -137,24 +137,24 @@ The popup (toolbar icon) provides:
 - *⚙ Settings* button (top-right) — opens the Options page
 
 * paw-server (optional)
-The Python CLI [[https://pypi.org/project/emacs-paw/][emacs-paw]] provides a small backend (Flask) for advanced flows:
+The Python CLI [[https://pypi.org/project/emacs-paw/][emacs-paw]] provides a local backend for advanced flows:
 - ~POST /paw~: receive selection payload from the extension
 - ~GET /words~: serve highlight word list
 - ~POST /source~: receive and persist current page HTML
-- ~GET /media/ws~: browser media WebSocket used by the popup and Emacs clients
+- ~GET /media/ws~: browser media WebSocket used by the popup and local clients
 - ~POST /media/request~: browser media status/control proxy
 
-1. Install: ~pip install emacs-paw~
-2. Run server:
+1. Install: ~pip install -U emacs-paw~
+2. Run the server for selection/highlight/source flows:
    #+begin_src sh
    paw run_server --port 5001 --save-dir /tmp/paw_server_html_file.html
    #+end_src
    If you use [[https://github.com/chenyanming/paw][paw.el]], you can also ~M-x paw-server~.
-3. For media control, run the current local paw-server in Flask mode:
+3. For media control, run paw-server ~0.1.21~ or newer in production mode:
    #+begin_src sh
-   PAW_SERVER_TYPE=flask PAW_LOG_LEVEL=DEBUG python3 -m paw.cli server --server-type flask
+   PAW_SERVER_TYPE=production PAW_LOG_LEVEL=INFO PAW_ACCESS_LOG=false paw server --server-type production
    #+end_src
-   Then enable *Media* in the popup/options. The extension does not poll media sites in the background; it only answers requests from paw-server.
+   ~production~ uses Uvicorn/ASGI so HTTP endpoints and ~/media/ws~ share one port. ~PAW_ACCESS_LOG=false~ keeps frequent polling requests out of the server log. Then enable *Media* in the popup/options. The extension does not poll media sites in the background; it only answers requests from paw-server.
 4. Handle HTML file in Emacs:
    #+begin_src emacs-lisp
    (defun paw-server-org-protocol (data)

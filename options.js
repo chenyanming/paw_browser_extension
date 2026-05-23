@@ -58,9 +58,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const autoHighlightButton = document.getElementById('autoHighlightButton');
   const autoHighlightStatusText = document.getElementById('autoHighlightStatusText');
   const singleClickButton = document.getElementById('singleClickButton');
-  const singleClickStatusText = document.getElementById('singleClickButton');
+  const singleClickStatusText = document.getElementById('singleClickStatusText');
   const showButtonButton = document.getElementById('showButtonButton');
   const showButtonStatusText = document.getElementById('showButtonStatusText');
+  const mediaBridgeButton = document.getElementById('mediaBridgeButton');
+  const mediaBridgeStatusText = document.getElementById('mediaBridgeStatusText');
   const keySelection = document.getElementById('key-selection');
   const floatingButtonLeftSelection = document.getElementById('floating-button-left');
   const floatingButtonTopSelection = document.getElementById('floating-button-top');
@@ -81,6 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
     'isSingleClickDisabled',
     'isAutoHighlightDisabled',
     'isShowButtonDisabled',
+    'mediaControlEnabled',
     'shortcutKey',
     'modifierKey',
     'floatingButtonLeft',
@@ -101,6 +104,8 @@ document.addEventListener('DOMContentLoaded', function() {
     setBadge(autoHighlightStatusText, !data.isAutoHighlightDisabled);
     showButtonButton.checked = !data.isShowButtonDisabled;
     setBadge(showButtonStatusText, !data.isShowButtonDisabled);
+    mediaBridgeButton.checked = Boolean(data.mediaControlEnabled);
+    setBadge(mediaBridgeStatusText, Boolean(data.mediaControlEnabled));
     keySelection.value = data.shortcutKey || 's';
     modifierSelection.value = data.modifierKey || 'Alt';
     floatingButtonLeftSelection.value = data.floatingButtonLeft || '10';
@@ -140,6 +145,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const isShowButtonDisabled = !showButtonButton.checked;
     setBadge(showButtonStatusText, showButtonButton.checked);
     api.storage.sync.set({ isShowButtonDisabled: isShowButtonDisabled });
+  });
+  mediaBridgeButton.addEventListener('change', function() {
+    const mediaControlEnabled = mediaBridgeButton.checked;
+    setBadge(mediaBridgeStatusText, mediaControlEnabled);
+    api.storage.sync.set({ mediaControlEnabled: mediaControlEnabled });
   });
   // Live JSON validation for protocol textarea
   protocolInput.addEventListener('input', () => {
@@ -212,6 +222,10 @@ document.addEventListener('DOMContentLoaded', function() {
       if (key === 'isShowButtonDisabled') {
         showButtonButton.checked = !newValue;
         showButtonStatusText.textContent = newValue ? 'OFF' : 'ON';
+      }
+      if (key === 'mediaControlEnabled') {
+        mediaBridgeButton.checked = Boolean(newValue);
+        setBadge(mediaBridgeStatusText, Boolean(newValue));
       }
     }
   });

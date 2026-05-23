@@ -68,6 +68,55 @@
     </div>
   </section>
 
+  <section class="p-media" aria-label="Browser media controls">
+    <div class="p-media-head">
+      <div class="p-section-label">Media</div>
+      <div class="p-media-right">
+        <span class="p-badge" id="mediaBridgeStatusText" aria-live="polite" aria-atomic="true"></span>
+        <label class="p-switch" title="Enable browser media bridge">
+          <input type="checkbox" id="mediaBridgeButton" role="switch" aria-label="Enable browser media bridge">
+          <span class="p-track" aria-hidden="true"></span>
+        </label>
+      </div>
+      <button id="mediaRefresh" class="p-media-refresh" type="button"
+              title="Refresh media status" aria-label="Refresh media status">
+        <svg class="p-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M13 4.5A5.5 5.5 0 0 0 3.4 3L2 4.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M2 1.5v2.9h2.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 11.5A5.5 5.5 0 0 0 12.6 13L14 11.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M14 14.5v-2.9h-2.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="p-media-status" aria-live="polite" aria-atomic="true">
+      <span id="mediaStatusDot" class="p-media-dot" aria-hidden="true"></span>
+      <span id="mediaStatusText" class="p-media-status-text">Disabled</span>
+      <span id="mediaStatusMeta" class="p-media-status-meta"></span>
+    </div>
+    <div class="p-media-controls" role="group" aria-label="Browser media playback controls">
+      <button id="mediaBack" class="p-media-btn" type="button"
+              title="Back 10 seconds" aria-label="Back 10 seconds">
+        <svg class="p-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M7 4 3 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M13 4 9 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button id="mediaToggle" class="p-media-btn primary" type="button"
+              title="Play/Pause" aria-label="Play or pause media">
+        <svg class="p-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M5 3.5v9l7-4.5-7-4.5Z" fill="currentColor"/>
+        </svg>
+      </button>
+      <button id="mediaForward" class="p-media-btn" type="button"
+              title="Forward 10 seconds" aria-label="Forward 10 seconds">
+        <svg class="p-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="m9 4 4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="m3 4 4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </section>
+
   <section class="p-protocol" aria-label="Send to Emacs">
     <div class="p-section-label">Send to</div>
     <div id="contextMenu" class="p-protocol-list" role="group" aria-label="Protocol buttons"></div>

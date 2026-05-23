@@ -30,6 +30,7 @@ Open the extension Options page (click the ⚙ gear icon in the popup). Stored k
 - ~floatingButtonLeft~, ~floatingButtonTop~ (pixel offsets)
 - ~protocol~, ~template~, ~url~, ~title~, ~note~, ~body~
 - ~server~ (default ~http://localhost:5001~)
+- ~mediaControlEnabled~ (default disabled; opens the local media WebSocket when enabled)
 
 Captured tab sections are stored in ~storage.local~ under the key ~pawTabSections~.
 
@@ -130,6 +131,7 @@ From the popup:
 * Popup
 The popup (toolbar icon) provides:
 - *Enable / Single-Click / Auto-Highlight / Show Button* toggles
+- *Media* bridge toggle, connection/status display, refresh, seek, and play/pause controls
 - Quick *Send to* protocol buttons (from ~Protocol(s)~ setting)
 - *Capture Tab*, *Capture All*, *Manage Tabs* buttons
 - *⚙ Settings* button (top-right) — opens the Options page
@@ -139,6 +141,8 @@ The Python CLI [[https://pypi.org/project/emacs-paw/][emacs-paw]] provides a sma
 - ~POST /paw~: receive selection payload from the extension
 - ~GET /words~: serve highlight word list
 - ~POST /source~: receive and persist current page HTML
+- ~GET /media/ws~: browser media WebSocket used by the popup and Emacs clients
+- ~POST /media/request~: browser media status/control proxy
 
 1. Install: ~pip install emacs-paw~
 2. Run server:
@@ -146,7 +150,12 @@ The Python CLI [[https://pypi.org/project/emacs-paw/][emacs-paw]] provides a sma
    paw run_server --port 5001 --save-dir /tmp/paw_server_html_file.html
    #+end_src
    If you use [[https://github.com/chenyanming/paw][paw.el]], you can also ~M-x paw-server~.
-3. Handle HTML file in Emacs:
+3. For media control, run the current local paw-server in Flask mode:
+   #+begin_src sh
+   PAW_SERVER_TYPE=flask PAW_LOG_LEVEL=DEBUG python3 -m paw.cli server --server-type flask
+   #+end_src
+   Then enable *Media* in the popup/options. The extension does not poll media sites in the background; it only answers requests from paw-server.
+4. Handle HTML file in Emacs:
    #+begin_src emacs-lisp
    (defun paw-server-org-protocol (data)
      (let* ((url (org-protocol-sanitize-uri (or (plist-get data :url) ""))))
@@ -163,16 +172,20 @@ The Python CLI [[https://pypi.org/project/emacs-paw/][emacs-paw]] provides a sma
 - Use the keyboard shortcut (default Alt + s) to grab the word under the caret and send
 - Enable Auto-Highlight to see known words; hover the bubble for check/delete/view
 - Toggle "Show Button" to hide the floating button by default (it still appears on selection)
+- Enable *Media* only when using paw-server/Emacs media controls. The popup can show status and send play/pause/seek commands for supported browser media.
 - Use *Capture Tab* or *Capture All* to save tabs to the manager; reopen them any time from *Manage Tabs*
 
 * Permissions
 - ~storage~, ~activeTab~, ~tabs~
 - ~host_permissions~: ~http://localhost/*~ (only for paw-server features)
-- Firefox MV2: ~content_security_policy~ allows Google Fonts (DM Sans/Mono) and localhost fetch
+- Chrome MV3: ~content_security_policy~ allows extension pages to connect to ~http://localhost:*~ and ~ws://localhost:*~ for paw-server media/control features
+- Firefox MV2: ~content_security_policy~ allows Google Fonts (DM Sans/Mono), localhost fetch, and localhost WebSocket
+- ~netflix-bridge.js~ is web-accessible only on Netflix pages in MV3
 
 * Privacy
 - No data is sent anywhere unless you enable paw-server or trigger org-protocol
 - When ~server~ is set, requests go to your configured local server only
+- Media bridge traffic stays between the extension and your local paw-server; the bridge is disabled by default
 - No usage analytics or third-party telemetry
 
 * Development
@@ -198,8 +211,9 @@ To package for both browsers, use ~./package.sh~ or ~npm run package~; artifacts
 - Save full page HTML via ~POST /source~ and optional Wallabag save
 - Options page: toggles, shortcuts, offsets, Protocol(s) JSON editor (with live validation), server
 - Popup: toggles, protocol buttons, tab capture/manager, settings shortcut
+- Popup media controls with opt-in paw-server WebSocket connection
 - Tab manager with drag-and-drop, multi-select, send-to-Emacs, multi-format copy
-- Netflix page bridge exposing play/pause/seek via injected script
+- Browser media status/control bridge for supported players, with on-demand Netflix page bridge
 - Firefox MV2 and Chrome MV3 support
 
 * Supported Emacs Packages

@@ -169,8 +169,6 @@ api.storage.sync.get(['isExtensionDisabled', 'isShowButtonDisabled'], function(d
             // Always create button so it can appear on text selection
             createButton();
             console.log("createButton done");
-            waitForNetflixAndExpose();
-            console.log("expose netflix done");
         });
     }
 });
@@ -284,6 +282,11 @@ if (window.top === window) {
                 // 调用 content.js 中的函数
                 send_to_paw(request.selectedNode, request.item, request.allowNoSelection);
                 sendResponse({ result: "Function in content.js called" });
+            }
+            if (request.action === "media_request") {
+                handleMediaRequest(request)
+                    .then(sendResponse);
+                return true;
             }
         });
     }
@@ -1994,11 +1997,253 @@ function disable_clickable_word() {
 // 注入到页面主 world
 /** Inject site bridge script into page world (e.g., Netflix). */
 function waitForNetflixAndExpose() {
+    if (!isNetflixHost(window.location.hostname)) {
+        return false;
+    }
+    if (document.documentElement.hasAttribute("data-paw-netflix-bridge")) {
+        return false;
+    }
+    document.documentElement.setAttribute("data-paw-netflix-bridge", "loaded");
+
     // 创建 <script> 注入到页面主世界
     const s = document.createElement('script');
-    s.src = chrome.runtime.getURL('netflix-bridge.js');
-    s.onload = () => s.remove(); // 加载后删除标签
+    s.src = api.runtime.getURL('netflix-bridge.js');
+    s.onload = () => {
+        console.log("paw netflix bridge loaded");
+        s.remove();
+    };
+    s.onerror = () => {
+        console.warn("paw netflix bridge failed to load", s.src);
+        document.documentElement.removeAttribute("data-paw-netflix-bridge");
+        s.remove();
+    };
     document.documentElement.appendChild(s);
+    return true;
+}
+
+function isNetflixHost(hostname) {
+    return /(^|\.)netflix\.com$/i.test(hostname);
+}
+
+function parseNetflixBridgeDetail(detail) {
+    if (typeof detail !== "string") {
+        return detail || {};
+    }
+
+    try {
+        return JSON.parse(detail);
+    } catch (error) {
+        return {};
+    }
+}
+
+function emptyNetflixStatus() {
+    return {
+        ready: false,
+        hasNetflixGlobal: false,
+        hasPlayerAPI: false,
+        hasPlayer: false,
+        attempts: 0,
+        sessionIds: [],
+        lastError: null
+    };
+}
+
+function sendNetflixBridgeRequest(command, payload, timeoutMs) {
+    if (!isNetflixHost(window.location.hostname)) {
+        return Promise.resolve({
+            ok: false,
+            error: "Active tab is not Netflix",
+            status: emptyNetflixStatus()
+        });
+    }
+
+    const injected = waitForNetflixAndExpose();
+    const requestId = `paw-netflix-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+    return new Promise((resolve) => {
+        const timeoutId = setTimeout(() => {
+            cleanup();
+            resolve({
+                id: requestId,
+                type: command,
+                ok: false,
+                error: "Netflix bridge did not respond",
+                status: emptyNetflixStatus()
+            });
+        }, Math.min(Number(timeoutMs) || 800, 1200));
+
+        function cleanup() {
+            clearTimeout(timeoutId);
+            document.removeEventListener("paw-netflix-response", onResponse);
+        }
+
+        function onResponse(event) {
+            const response = parseNetflixBridgeDetail(event.detail);
+            if (response.id !== requestId) {
+                return;
+            }
+
+            cleanup();
+            resolve(response);
+        }
+
+        document.addEventListener("paw-netflix-response", onResponse);
+        setTimeout(() => {
+            document.dispatchEvent(new CustomEvent("paw-netflix-request", {
+                detail: JSON.stringify({
+                    id: requestId,
+                    type: command,
+                    payload: payload || {}
+                })
+            }));
+        }, injected ? 150 : 0);
+    });
+}
+
+function nowMs() {
+    return Date.now();
+}
+
+function clampMs(value) {
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+        return 0;
+    }
+    return Math.max(0, Math.round(value));
+}
+
+function secondsToMs(value) {
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+        return 0;
+    }
+    return clampMs(value * 1000);
+}
+
+function hostnameProvider(hostname) {
+    if (/(^|\.)netflix\.com$/i.test(hostname)) return "netflix";
+    if (/(^|\.)youtube\.com$/i.test(hostname) || /(^|\.)youtu\.be$/i.test(hostname)) return "youtube";
+    if (/(^|\.)bilibili\.com$/i.test(hostname)) return "bilibili";
+    if (/(^|\.)disneyplus\.com$/i.test(hostname)) return "disneyplus";
+    if (/(^|\.)primevideo\.com$/i.test(hostname) || /(^|\.)amazon\./i.test(hostname)) return "primevideo";
+    return "html5";
+}
+
+function mediaElementForProvider(provider) {
+    if (provider === "disneyplus") {
+        return document.querySelector("#hivePlayer") || document.querySelector("video, audio");
+    }
+    if (provider === "primevideo") {
+        return document.querySelector("#dv-web-player-2 video") ||
+            document.querySelector("#dv-web-player video") ||
+            document.querySelector("video, audio");
+    }
+    if (provider === "youtube") {
+        return document.querySelector(".html5-main-video") || document.querySelector("video, audio");
+    }
+    return document.querySelector("video, audio");
+}
+
+function mediaResponseFromElement(provider, media, ok, error) {
+    const currentTimeMs = media ? secondsToMs(media.currentTime) : 0;
+    const durationMs = media ? secondsToMs(media.duration) : 0;
+    return {
+        ok: Boolean(ok),
+        error: error || null,
+        provider,
+        url: window.location.href,
+        title: document.title || "",
+        currentTimeMs,
+        durationMs,
+        remainingMs: durationMs > currentTimeMs ? durationMs - currentTimeMs : 0,
+        paused: media ? Boolean(media.paused) : true,
+        playbackRate: media && typeof media.playbackRate === "number" ? media.playbackRate : 1,
+        canControl: Boolean(media),
+        updatedAtMs: nowMs()
+    };
+}
+
+async function applyElementMediaAction(media, request) {
+    const action = request.command || request.action || "status";
+    const payload = request.payload || {};
+    const deltaMs = typeof request.deltaMs === "number" ? request.deltaMs : payload.deltaMs;
+    const positionMs = typeof request.positionMs === "number" ? request.positionMs : payload.positionMs;
+
+    if (action === "play") {
+        await media.play();
+    } else if (action === "pause") {
+        media.pause();
+    } else if (action === "toggle") {
+        if (media.paused) {
+            await media.play();
+        } else {
+            media.pause();
+        }
+    } else if (action === "seekAbsolute") {
+        media.currentTime = clampMs(positionMs) / 1000;
+    } else if (action === "seekRelative") {
+        media.currentTime = Math.max(0, media.currentTime + (Number(deltaMs || payload.milliseconds || 0) / 1000));
+    }
+}
+
+function normalizeNetflixBridgeResponse(response, action) {
+    const status = (response && response.status) || {};
+    const currentTimeMs = clampMs(status.currentTime);
+    const durationMs = clampMs(status.duration);
+    const hasPlayer = Boolean(status.ready || status.hasPlayer);
+    return {
+        ok: Boolean(response && response.ok !== false && (hasPlayer || action !== "status")),
+        error: response && response.error ? response.error : (hasPlayer ? null : "no-media"),
+        provider: "netflix",
+        url: window.location.href,
+        title: document.title || "",
+        currentTimeMs,
+        durationMs,
+        remainingMs: durationMs > currentTimeMs ? durationMs - currentTimeMs : 0,
+        paused: typeof status.paused === "boolean" ? status.paused : true,
+        playbackRate: 1,
+        canControl: hasPlayer,
+        updatedAtMs: nowMs()
+    };
+}
+
+async function handleNetflixMediaRequest(request) {
+    const action = request.command || request.action || "status";
+    const payload = request.payload || {};
+    const bridgePayload = {};
+    let bridgeCommand = action;
+
+    if (action === "seekAbsolute") {
+        bridgeCommand = "seek";
+        bridgePayload.position = request.positionMs ?? payload.positionMs;
+    } else if (action === "seekRelative") {
+        bridgeCommand = "seekRelative";
+        bridgePayload.milliseconds = request.deltaMs ?? payload.deltaMs ?? payload.milliseconds;
+    }
+
+    const response = await sendNetflixBridgeRequest(bridgeCommand, bridgePayload, request.timeoutMs);
+    return normalizeNetflixBridgeResponse(response, action);
+}
+
+async function handleElementMediaRequest(request) {
+    const provider = hostnameProvider(window.location.hostname);
+    const media = mediaElementForProvider(provider);
+    if (!media) {
+        return mediaResponseFromElement(provider, null, false, "no-media");
+    }
+
+    try {
+        await applyElementMediaAction(media, request);
+        return mediaResponseFromElement(provider, media, true, null);
+    } catch (error) {
+        return mediaResponseFromElement(provider, media, false, error?.message || String(error));
+    }
+}
+
+async function handleMediaRequest(request) {
+    if (isNetflixHost(window.location.hostname)) {
+        return handleNetflixMediaRequest(request);
+    }
+    return handleElementMediaRequest(request);
 }
 
 

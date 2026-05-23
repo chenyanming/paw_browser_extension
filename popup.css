@@ -204,6 +204,149 @@ body {
   transform: translateX(15px);
 }
 
+/* ── Media Section ───────────────────────────── */
+.p-media {
+  padding: 7px 13px 9px;
+  border-bottom: 1px solid var(--p-border);
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+}
+
+.p-media-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  margin-bottom: 5px;
+}
+
+.p-media-head .p-section-label {
+  margin-bottom: 0;
+}
+
+.p-media-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.p-media-refresh {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  color: #64748b;
+  background: rgba(255,255,255,0.75);
+  border: 1px solid var(--p-border);
+  border-radius: var(--p-radius);
+  cursor: pointer;
+  transition: all 100ms var(--p-ease);
+  padding: 0;
+}
+
+.p-media-refresh:hover {
+  color: var(--p-accent);
+  border-color: #bfdbfe;
+  background: #fff;
+}
+
+.p-media-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 18px;
+  margin-bottom: 7px;
+  overflow: hidden;
+}
+
+.p-media-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.p-media-dot.ready {
+  background: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22,163,74,0.14);
+}
+
+.p-media-dot.waiting {
+  background: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245,158,11,0.16);
+}
+
+.p-media-dot.error {
+  background: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220,38,38,0.14);
+}
+
+.p-media-status-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--p-text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.p-media-status-meta {
+  margin-left: auto;
+  font-family: var(--p-mono);
+  font-size: 10px;
+  color: var(--p-text-muted);
+  flex-shrink: 0;
+}
+
+.p-media-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.p-media-btn {
+  display: grid;
+  place-items: center;
+  height: 28px;
+  color: #0f172a;
+  background: rgba(255,255,255,0.82);
+  border: 1px solid #bfdbfe;
+  border-radius: var(--p-radius);
+  cursor: pointer;
+  transition: all 100ms var(--p-ease);
+  padding: 0;
+}
+
+.p-media-btn.primary {
+  color: white;
+  background: var(--p-accent);
+  border-color: var(--p-accent);
+}
+
+.p-media-btn:hover:not(:disabled) {
+  color: white;
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(29,78,216,0.22);
+}
+
+.p-media-btn:disabled,
+.p-media-refresh:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+  box-shadow: none;
+}
+
+.p-media-btn:focus-visible,
+.p-media-refresh:focus-visible {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 2px;
+}
+
 /* ── Protocol Section ────────────────────────── */
 .p-protocol {
   padding: 7px 13px 9px;

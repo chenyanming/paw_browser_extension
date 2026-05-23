@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "paw",
-    "version": "1.0.26",
+    "version": "1.0.27",
     "description": "Enhanced text interaction for Emacs: capture selections, send to org-protocol, with floating button and keyboard shortcuts.",
     "action": {
         "default_popup": "popup.html",
@@ -18,6 +18,9 @@
     },
     "permissions": ["storage", "activeTab", "tabs"],
     "host_permissions": ["http://localhost/*"],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:* ws://localhost:*"
+    },
     "content_scripts": [
         {
             "all_frames": true,
@@ -29,7 +32,7 @@
     "web_accessible_resources": [
         {
             "resources": ["netflix-bridge.js"],
-            "matches": ["<all_urls>"]
+            "matches": ["*://*.netflix.com/*"]
         }
     ],
     "icons": {

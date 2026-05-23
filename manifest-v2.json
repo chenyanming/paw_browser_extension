@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "paw",
-    "version": "1.0.26",
+    "version": "1.0.27",
     "description": "Enhanced text interaction for Emacs: capture selections, send to org-protocol, with floating button and keyboard shortcuts.",
     "browser_action": {
         "default_popup": "popup.html",
@@ -14,7 +14,7 @@
         "open_in_tab": true
     },
     "permissions": ["storage", "activeTab", "tabs", "http://localhost/*"],
-    "content_security_policy": "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: http: https:; connect-src 'self' http://localhost:*",
+    "content_security_policy": "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: http: https:; connect-src 'self' http://localhost:* ws://localhost:*",
     "background": {
         "scripts": ["background.js"],
         "persistent": true
